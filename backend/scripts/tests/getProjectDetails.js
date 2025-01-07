@@ -137,7 +137,7 @@ async function main() {
     const contract = new hre.ethers.Contract(contractAddress, abi, provider);
 
     // Specify the project ID you want to query
-    const projectId = 7; // Replace with the actual project ID
+    const projectId = 5; // Replace with the actual project ID
 
     // Fetch project details
     console.log(`Fetching details for Project ID: ${projectId}...`);
