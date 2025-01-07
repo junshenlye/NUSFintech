@@ -1,0 +1,47 @@
+npx hardhat run scripts/tests/demo-mcu-registry.js --network xrpl_evm_testnet  
+
+🌍 MCU Project Registry Demo - UNFCCC Supervision System
+
+Participating Entities:
+UNFCCC: 0xFe4D111b2A5b1Dff59F7E670961BF0d000AB6724
+Country A: 0xD15f9C53d8e2B8c203E4AcA76c611511E7Bb5bf9
+Country B: 0x543FAD820B343d85248425b975128e8a01340B1c
+
+💰 Initial ETH Balances:
+UNFCCC: 53.0602537875 ETH
+Country A: 32.7278053625 ETH
+Country B: 27.803179325 ETH
+Attached to existing MCUProjectRegistry at: 0xdf3117fE0daA4CC09B8181AbB3eDC35cB179c42C
+
+🏛️ Granting COUNTRY_ROLE to Country A and Country B...
+Country A (0xD15f9C53d8e2B8c203E4AcA76c611511E7Bb5bf9) and Country B (0x543FAD820B343d85248425b975128e8a01340B1c) granted COUNTRY_ROLE
+
+📄 Registering a Project by Country A...
+Project "Solar Pannel Global Project 2" registered by Country A with ID: 9
+
+🔄 Validating Carbon Reduction and Minting Tokens...
+Carbon reduction of 2000 tCO2e validated and tokens minted
+Country A's MCU Token Balance: 2 tokens
+
+🔄 Updating Project Status to Active...
+Project status updated to Active
+
+📊 Final Project Details:
+Project Name: Solar Pannel Global Project 2
+Description: A project to build a solar farm.
+Country Owner: 0xD15f9C53d8e2B8c203E4AcA76c611511E7Bb5bf9
+Status: Active
+Tokens Minted: 2
+
+💰 Final ETH Balances:
+UNFCCC: 52.8470605875 ETH
+Country A: 32.3047739625 ETH
+Country B: 27.803179325 ETH
+
+⛽ Gas Usage Summary:
+unfccc: 0.213193 ETH
+countryA: 0.423031 ETH
+countryB: 0.000000 ETH
+
+🔍 View the contract on Etherscan:
+https://xrpl_evm_testnet.etherscan.io/address/0xdf3117fE0daA4CC09B8181AbB3eDC35cB179c42C

@@ -1,0 +1,72 @@
+ ITMO Agreement Demo - UNFCCC Supervision System
+
+Participating Entities:
+UNFCCC: 0xFe4D111b2A5b1Dff59F7E670961BF0d000AB6724
+Country A (Seller): 0xD15f9C53d8e2B8c203E4AcA76c611511E7Bb5bf9
+Country B (Buyer): 0x543FAD820B343d85248425b975128e8a01340B1c
+
+💰 Initial XRP Balances:
+UNFCCC: 55.3439813875 XRP
+Country A: 32.8117166625 XRP
+Country B: 27.875202925 XRP
+
+📝 Deploying ITMORegistry Contract...
+Registry deployed to: 0xDc8a5ee9d4B23Edf701581A577668A6cF205a2c7
+
+🏛️ Registering Countries...
+Country A (0xD15f9C53d8e2B8c203E4AcA76c611511E7Bb5bf9) registered
+Country B (0x543FAD820B343d85248425b975128e8a01340B1c) registered
+
+🚀 Initializing Agreement...
+Agreement initialized successfully
+
+📄 Agreement Initial Details:
+{
+  agreementId: '1',
+  seller: '0xD15f9C53d8e2B8c203E4AcA76c611511E7Bb5bf9',
+  buyer: '0x543FAD820B343d85248425b975128e8a01340B1c',
+  mcuAmount: '1000',
+  pricePerMCU: '0.1 XRP',
+  paymentMethod: 'Crypto',
+  status: 'SignaturePending',
+  createdAt: '1/7/2025, 9:55:10 PM',
+  validUntil: '1/7/2026, 9:55:10 PM',
+  transferDeadline: '2/14/2080, 11:50:18 AM',
+  correspondingAdjustmentRef: 'CA-2024-001'
+}
+
+✍️ Collecting Signatures...
+
+Country A (Seller) Signing Process:
+Country A signature confirmed
+
+Country B (Buyer) Signing Process:
+Country B signature confirmed
+
+🔓 UNFCCC Activating Agreement...
+Agreement activated successfully
+
+📊 Final Agreement Details:
+{
+  agreementId: '1',
+  seller: '0xD15f9C53d8e2B8c203E4AcA76c611511E7Bb5bf9',
+  buyer: '0x543FAD820B343d85248425b975128e8a01340B1c',
+  mcuAmount: '1000',
+  pricePerMCU: '0.1 XRP',
+  paymentMethod: 'Crypto',
+  status: 'Active',
+  createdAt: '1/7/2025, 9:55:10 PM',
+  validUntil: '1/7/2026, 9:55:10 PM',
+  transferDeadline: '2/14/2080, 11:50:18 AM',
+  correspondingAdjustmentRef: 'CA-2024-001'
+}
+
+💰 Final XRP Balances:
+UNFCCC: 53.0602537875 XRP
+Country A: 32.7278053625 XRP
+Country B: 27.803179325 XRP
+
+⛽ Gas Usage Summary:
+unfccc: 2.283728 XRP
+countryA: 0.083911 XRP
+countryB: 0.072024 XRP
