@@ -1,101 +1,131 @@
 import Image from "next/image";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+export default function LandingPage(){
+  return(
+    <div style={styles.container}>
+      {/* Header Section */}
+      <header style={styles.header}>
+        <h1 style={styles.logo}>
+          <Image
+            src="/carbon-credits-logo.png"
+            alt=""
+            width={40}
+            height={40}
+            style={styles.logoImage}
+          />
+          Carbon Credits
+        </h1>
+        <button style={styles.button}>Authentication</button>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+      {/* Main Content */}
+      <main style={styles.main}>
+        <h2 style={styles.heading}>Future’s Unified ITMOs Trading Exchange</h2>
+
+        <section style={styles.section}>
+          <h3 style={styles.subheading}>We are currently</h3>
+          <p style={styles.text}>
+            Building a Decentralised ITMOs Trading Platform using XRPL and EVM
+            Sidechain to ensure Transparency, Compliance and Efficiency for
+            UNFCCC regulated carbon market.
+          </p>
+        </section>
+
+        <section style={styles.section}>
+          <h3 style={styles.subheading}>Why? Because</h3>
+          <p style={styles.text}>
+            the Current ITMOs Market Suffers from Inefficiencies, Limited
+            Transparency and inadequate compliance mechanism, hindering the
+            UNFCCC’s ability to effectively regulate and enforce global carbon
+            reduction standards.
+          </p>
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      {/* Globe Image */}
+      <div style={styles.globeContainer}>
+        <Image
+          src="/globe-image.png"
+          alt="Globe"
+          width={300}
+          height={300}
+          style={styles.globeImage}
+        />
+      </div>
     </div>
   );
 }
+const styles: any = {
+  container: {
+    fontFamily: "'Arial', sans-serif",
+    background: "linear-gradient(to bottom, #2b3f5c, #133045)",
+    color: "white",
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: "2rem",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    width: "100%",
+    alignItems: "center",
+  },
+  logo: {
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+    margin: 0,
+    display: "flex",
+    alignItems: "center",
+  },
+  logoImage: {
+    height: "40px",
+    marginRight: "10px",
+  },
+  button: {
+    background: "#ff9800",
+    border: "none",
+    borderRadius: "20px",
+    padding: "0.5rem 1rem",
+    color: "#fff",
+    fontSize: "0.9rem",
+    cursor: "pointer",
+  },
+  main: {
+    flex: "1",
+    maxWidth: "800px",
+    margin: "3rem auto",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  section: {
+    marginTop: "2rem",
+    textAlign: "left" as const,
+  },
+  heading: {
+    fontSize: "2rem",
+    fontWeight: "bold",
+    marginBottom: "2rem",
+    textAlign: "center" as const,
+  },
+  subheading: {
+    fontSize: "1.5rem",
+    marginBottom: "1rem",
+  },
+  text: {
+    fontSize: "1rem",
+    lineHeight: "1.5",
+  },
+  globeContainer: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: "2rem",
+  },
+  globeImage: {
+    width: "300px",
+    borderRadius: "50%",
+  },
+};
