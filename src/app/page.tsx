@@ -55,7 +55,7 @@ export default function LandingPage(){
     </div>
   );
 }
-const styles: Record<string, CSSProperties> = {
+const styles: any = {
   container: {
     fontFamily: "'Arial', sans-serif",
     background: "linear-gradient(to bottom, #2b3f5c, #133045)",
