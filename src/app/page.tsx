@@ -1,22 +1,23 @@
 import Image from "next/image";
 
-export default function LandingPage(){
-  return(
+export default function LandingPage() {
+  return (
     <div style={styles.container}>
       {/* Header Section */}
       <header style={styles.header}>
         <h1 style={styles.logo}>
           <Image
-            src="/carbon-credits-logo.png"
+            src="/carbon-credit-logo.png"
             alt=""
             width={40}
             height={40}
             style={styles.logoImage}
           />
-          Carbon Credits
+          SWI Carbon Credits
         </h1>
         <button style={styles.button}>Authentication</button>
       </header>
+
 
       {/* Main Content */}
       <main style={styles.main}>
@@ -45,7 +46,7 @@ export default function LandingPage(){
       {/* Globe Image */}
       <div style={styles.globeContainer}>
         <Image
-          src="/globe-image.png"
+          src="/LandingPic.png"
           alt="Globe"
           width={300}
           height={300}
@@ -55,16 +56,33 @@ export default function LandingPage(){
     </div>
   );
 }
+
 const styles: any = {
   container: {
     fontFamily: "'Arial', sans-serif",
-    background: "linear-gradient(to bottom, #2b3f5c, #133045)",
+    backgroundColor: "#083142", // Base color (dark blue)
+    backgroundImage: "linear-gradient(to bottom, #083142, #2C521F)", // Gradient colors (blue to green)
+    backgroundSize: "cover", // Ensure the background covers the entire container
+    backgroundPosition: "center center", // Position the background at the center
+    backgroundRepeat: "no-repeat", // Ensure the background does not repeat
     color: "white",
     minHeight: "100vh",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     padding: "2rem",
+    position: "relative", // Ensure it's properly positioned
+  },
+  noise: {
+    position: "absolute", // Position the noise texture over the background
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "100%",
+    backgroundImage: "url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...')", // Base64 noise image
+    backgroundSize: "cover", // Ensure noise texture covers the entire container
+    opacity: "0.2", // Set opacity for the noise effect
+    pointerEvents: "none", // Ensure noise does not block interactions with the page
   },
   header: {
     display: "flex",
@@ -129,3 +147,4 @@ const styles: any = {
     borderRadius: "50%",
   },
 };
+
