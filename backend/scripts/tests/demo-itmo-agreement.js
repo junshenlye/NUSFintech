@@ -1,10 +1,10 @@
-// scripts/demo-itmo-agreement.js
 const hre = require("hardhat");
 require('dotenv').config();
 
 async function main() {
     console.log("\n🌍 ITMO Agreement Demo - UNFCCC Supervision System\n");
 
+    // Check for required environment variables
     if (!process.env.PRIVATE_KEY || !process.env.Country_A_Private_Key || !process.env.Country_B_Private_Key) {
         throw new Error("Missing required environment variables. Check your .env file");
     }
@@ -23,16 +23,10 @@ async function main() {
         hre.ethers.provider
     );
 
-    // Verify the UNFCCC address matches the expected address
-    /*
-    if (unfccc.address.toLowerCase() !== process.env.ACCOUNT_ADDRESS.toLowerCase()) {
-        throw new Error("UNFCCC address mismatch. Check your private key in .env");
-    }*/
-
     console.log("Participating Entities:");
     console.log(`UNFCCC: ${unfccc.address}`);
-    console.log(`Country A: ${countryA.address}`);
-    console.log(`Country B: ${countryB.address}`);
+    console.log(`Country A (Seller): ${countryA.address}`);
+    console.log(`Country B (Buyer): ${countryB.address}`);
 
     // Get initial balances
     const initialBalances = {
@@ -47,100 +41,99 @@ async function main() {
     console.log(`Country B: ${initialBalances.countryB} XRP`);
 
     try {
-        // Deploy Registry Contract
-        console.log("\n📝 Deploying ITMORegistry Contract...");
-        const ITMORegistry = await hre.ethers.getContractFactory("ITMORegistry", unfccc);
-        const registry = await ITMORegistry.deploy();
-        await registry.waitForDeployment();
-        
-        const registryAddress = await registry.getAddress();
-        console.log(`Registry deployed to: ${registryAddress}`);
+        // Use registered address
+        const registryAddress = "0xDc8a5ee9d4B23Edf701581A577668A6cF205a2c7";
+        const ITMORegistry = await hre.ethers.getContractFactory("ITMORegistry");
+        const registry = ITMORegistry.attach(registryAddress);
+        console.log(`Attached to existing ITMORegistry at: ${registryAddress}`);
 
-        // Save the contract address to a file for future reference
-        await saveDeployment({
-            network: hre.network.name,
-            registryAddress: registryAddress,
-            deploymentTime: new Date().toISOString(),
-            unfcccAddress: unfccc.address
-        });
-
-        // Register Countries
+        // Register Countries (if not already registered)
         console.log("\n🏛️ Registering Countries...");
-        const registerA = await registry.registerCountry(countryA.address);
-        await registerA.wait();
-        console.log(`Country A (${countryA.address}) registered`);
 
-        const registerB = await registry.registerCountry(countryB.address);
-        await registerB.wait();
-        console.log(`Country B (${countryB.address}) registered`);
+        const isCountryARegistered = await registry.hasRole(await registry.COUNTRY_ROLE(), countryA.address);
+        if (!isCountryARegistered) {
+            const registerA = await registry.registerCountry(countryA.address);
+            await registerA.wait();
+            console.log(`Country A (${countryA.address}) registered`);
+        } else {
+            console.log(`Country A (${countryA.address}) is already registered`);
+        }
 
-        // Create Agreement Hash (simulating off-chain agreement)
-        const agreementContent = {
-            title: "Bilateral ITMO Transfer Agreement",
-            description: "Agreement for the transfer of ITMOs between Country A and Country B",
-            terms: {
-                transferAmount: "1000 tCO2e",
-                price: "25 USD/tCO2e",
-                validityPeriod: "2024-2025",
-                monitoringRequirements: "Annual verification by accredited third party"
-            },
-            parties: [countryA.address, countryB.address],
-            timestamp: new Date().toISOString()
-        };
+        const isCountryBRegistered = await registry.hasRole(await registry.COUNTRY_ROLE(), countryB.address);
+        if (!isCountryBRegistered) {
+            const registerB = await registry.registerCountry(countryB.address);
+            await registerB.wait();
+            console.log(`Country B (${countryB.address}) registered`);
+        } else {
+            console.log(`Country B (${countryB.address}) is already registered`);
+        }
 
-        const agreementHash = hre.ethers.keccak256(
-            hre.ethers.toUtf8Bytes(JSON.stringify(agreementContent))
-        );
-
-        console.log("\n📄 Agreement Details:");
-        console.log(JSON.stringify(agreementContent, null, 2));
-        console.log(`Agreement Hash: ${agreementHash}`);
+        // Get current timestamp and calculate deadlines
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const transferDeadline = currentTimestamp + (30 * 24 * 60 * 60); // 30 days from now
+        const validityPeriod = 365 * 24 * 60 * 60; // 1 year
 
         // Initialize Agreement
         console.log("\n🚀 Initializing Agreement...");
+        const agreementId = Date.now(); // Use a unique ID for each run
+        const mcuAmount = hre.ethers.parseUnits("20", 0); // 1000 MCUs
+        const pricePerMCU = hre.ethers.parseEther("0.1"); // 0.1 XRP per MCU
+
         const initTx = await registry.initializeAgreement(
-            agreementHash,
-            [countryA.address, countryB.address]
+            agreementId,
+            countryA.address, // seller
+            countryB.address, // buyer
+            mcuAmount,
+            pricePerMCU,
+            "XRP", // paymentCurrency
+            1, // paymentMethod (Crypto)
+            validityPeriod,
+            transferDeadline,
+            "CA-2024-001" // correspondingAdjustmentRef
         );
-        const initReceipt = await initTx.wait();
-        
-        // Get agreement ID from event
-        const event = initReceipt.logs.find(
-            log => log.fragment?.name === 'AgreementInitialized'
-        );
-        const agreementId = event.args[0];
-        console.log(`Agreement ID: ${agreementId}`);
+        await initTx.wait();
+        console.log("Agreement initialized successfully");
+
+        // Display initial agreement details
+        console.log("\n📄 Agreement Initial Details:");
+        let details = await registry.getAgreementDetails(agreementId);
+        displayAgreementDetails(details);
 
         // Countries Sign Agreement
         console.log("\n✍️ Collecting Signatures...");
         
         // Country A signs
-        console.log("\nCountry A Signing Process:");
-        const agreementDetailsA = await registry.getAgreementDetails(agreementId);
-        console.log("Current Status:", getStatusString(agreementDetailsA[3]));
-        const signA = await registry.connect(countryA).signAgreement(agreementId);
-        await signA.wait();
-        console.log("Country A signature confirmed");
+        console.log("\nCountry A (Seller) Signing Process:");
+        const hasSignedA = await registry.hasSignedAgreement(agreementId, countryA.address);
+        if (!hasSignedA) {
+            const signA = await registry.connect(countryA).signAgreement(agreementId);
+            await signA.wait();
+            console.log("Country A signature confirmed");
+        } else {
+            console.log("Country A has already signed the agreement");
+        }
 
         // Country B signs
-        console.log("\nCountry B Signing Process:");
-        const agreementDetailsB = await registry.getAgreementDetails(agreementId);
-        console.log("Current Status:", getStatusString(agreementDetailsB[3]));
-        const signB = await registry.connect(countryB).signAgreement(agreementId);
-        await signB.wait();
-        console.log("Country B signature confirmed");
+        console.log("\nCountry B (Buyer) Signing Process:");
+        const hasSignedB = await registry.hasSignedAgreement(agreementId, countryB.address);
+        if (!hasSignedB) {
+            const signB = await registry.connect(countryB).signAgreement(agreementId);
+            await signB.wait();
+            console.log("Country B signature confirmed");
+        } else {
+            console.log("Country B has already signed the agreement");
+        }
 
         // UNFCCC Activates Agreement
         console.log("\n🔓 UNFCCC Activating Agreement...");
         const activate = await registry.activateAgreement(agreementId);
         await activate.wait();
+        console.log("Agreement activated successfully");
 
         // Final Status Check
-        const finalDetails = await registry.getAgreementDetails(agreementId);
-        console.log("\n📊 Final Agreement Status:");
-        console.log("Status:", getStatusString(finalDetails[3]));
-        console.log("Creation Time:", new Date(Number(finalDetails[4]) * 1000).toLocaleString());
-        console.log("Activation Time:", new Date(Number(finalDetails[5]) * 1000).toLocaleString());
+        console.log("\n📊 Final Agreement Details:");
+        details = await registry.getAgreementDetails(agreementId);
+        displayAgreementDetails(details);
 
         // Get final balances
         const finalBalances = {
@@ -199,9 +192,37 @@ function getStatusString(status) {
         2: "SignaturePending",
         3: "AllSignaturesCollected",
         4: "Active",
-        5: "Terminated"
+        5: "Completed",
+        6: "Terminated"
     };
     return statusMap[status] || `Unknown (${status})`;
+}
+
+// Helper function to convert payment method to string
+function getPaymentMethodString(method) {
+    const methodMap = {
+        0: "Fiat",
+        1: "Crypto",
+        2: "Mixed"
+    };
+    return methodMap[method] || `Unknown (${method})`;
+}
+
+// Helper function to display agreement details
+function displayAgreementDetails(details) {
+    console.log({
+        agreementId: details.agreementRef.toString(),
+        seller: details.seller,
+        buyer: details.buyer,
+        mcuAmount: details.mcuAmount.toString(),
+        pricePerMCU: hre.ethers.formatEther(details.pricePerMCU) + " " + details.paymentCurrency,
+        paymentMethod: getPaymentMethodString(details.paymentMethod),
+        status: getStatusString(details.status),
+        createdAt: new Date(Number(details.createdAt) * 1000).toLocaleString(),
+        validUntil: new Date(Number(details.validUntil) * 1000).toLocaleString(),
+        transferDeadline: new Date(Number(details.transferDeadline) * 1000).toLocaleString(),
+        correspondingAdjustmentRef: details.correspondingAdjustmentRef
+    });
 }
 
 main()

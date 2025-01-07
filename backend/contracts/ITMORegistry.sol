@@ -8,60 +8,55 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 /**
  * @title ITMORegistry
  * @dev Manages ITMO agreements between countries under UNFCCC supervision
- * @notice This contract only handles the agreement registration and verification,
- * not the actual trading of ITMOs
+ * @notice This contract handles agreement creation, signing, and supervision for ITMO trades
  */
 contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
     // Roles
     bytes32 public constant UNFCCC_ROLE = keccak256("UNFCCC_ROLE");
     bytes32 public constant COUNTRY_ROLE = keccak256("COUNTRY_ROLE");
 
-    // ITMO Agreement Status
+    // Agreement Status
     enum AgreementStatus {
         NonExistent,
         Initialized,
         SignaturePending,
         AllSignaturesCollected,
         Active,
+        Completed,
         Terminated
     }
 
-    // Project Type Enumeration
-    enum ProjectType {
-        RenewableEnergy,
-        EnergyEfficiency,
-        Forestry,
-        Transportation,
-        WasteManagement,
-        Other
-    }
-
-    // Emission Reduction Details
-    struct EmissionReductions {
-        uint256 totalEmissionReduction;
-        uint256 baselineEmissions;
-        string mitigationActivityDescription;
+    // Payment Method
+    enum PaymentMethod {
+        Fiat,
+        Crypto,
+        Mixed
     }
 
     // ITMO Agreement Structure
     struct ITMOAgreement {
-        string projectName;             // Name of the project
-        string itmoId;                  // Unique ITMO identifier
-        ProjectType projectType;        // Type of the project
-        address originatingCountry;     // Address of the originating country
-        string hostCountryRegistry;     // Host country registry (optional)
-        EmissionReductions emissionReductions; // Emission reduction details
-        address[] requiredSigners;      // List of countries that need to sign
-        mapping(address => bool) hasSigned;  // Track which countries have signed
-        uint256 signatureCount;         // Number of signatures collected
-        AgreementStatus status;         // Current status of agreement
-        uint256 createdAt;              // Timestamp when agreement was created
-        uint256 activatedAt;            // Timestamp when agreement was activated
-        bytes32 metadataHash;           // Hash of additional metadata (stored off-chain)
-        string agreementTerms;          // Terms of the agreement (e.g., transfer amount, price)
-        string monitoringRequirements;  // Monitoring and reporting requirements
-        string validityPeriod;          // Validity period of the agreement
-        address[] involvedParties;      // Additional parties involved (e.g., observers)
+        // Basic Information
+        uint256 agreementId;                // Change from string to uint256
+        address sellerCountry;             
+        address buyerCountry;              
+        uint256 mcuAmount;                 
+        uint256 pricePerMCU;              
+        string paymentCurrency;            
+        PaymentMethod paymentMethod;       
+        
+        // Status Information
+        AgreementStatus status;            
+        mapping(address => bool) hasSigned;  
+        uint256 signatureCount;             
+        
+        // Timeline Information
+        uint256 createdAt;                 
+        uint256 validUntil;                
+        uint256 transferDeadline;          
+        
+        // Agreement Type and References
+        bool isBilateral;                  
+        string correspondingAdjustmentRef; 
     }
 
     // Storage
@@ -69,17 +64,19 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
     uint256 public nextAgreementId;
 
     // Events
-    event ITMOAgreementInitialized(
+    event AgreementInitialized(
         uint256 indexed agreementId,
-        string itmoId,
-        string projectName,
-        address originatingCountry,
-        uint256 totalEmissionReduction
+        address indexed seller,
+        address indexed buyer,
+        uint256 mcuAmount,
+        uint256 pricePerMCU,
+        string paymentCurrency
     );
     event AgreementSigned(uint256 indexed agreementId, address indexed signer);
     event AllSignaturesCollected(uint256 indexed agreementId);
     event AgreementActivated(uint256 indexed agreementId);
-    event CountryRegistered(address indexed country);
+    event AgreementCompleted(uint256 indexed agreementId);
+    event AgreementTerminated(uint256 indexed agreementId);
 
     /**
      * @dev Constructor that gives msg.sender all the default admin role
@@ -91,92 +88,173 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
 
     /**
      * @dev Initialize a new ITMO agreement
-     * @param itmoId Unique identifier for the ITMO
-     * @param projectName Name of the project
-     * @param projectType Type of the project
-     * @param originatingCountry Address of the originating country
-     * @param requiredSigners Array of country addresses required to sign
-     * @param emissionData Emission reduction details
-     * @param metadataHash Hash of additional metadata stored off-chain
-     * @param agreementTerms Terms of the agreement (e.g., transfer amount, price)
-     * @param monitoringRequirements Monitoring and reporting requirements
-     * @param validityPeriod Validity period of the agreement
-     * @param involvedParties Additional parties involved (e.g., observers)
+     * @param agreementId UNFCCC reference number
+     * @param seller Address of the selling country
+     * @param buyer Address of the buying country
+     * @param mcuAmount Amount of MCUs to be transferred
+     * @param pricePerMCU Price per MCU
+     * @param paymentCurrency Currency for payment
+     * @param paymentMethod Method of payment
+     * @param validityPeriod Duration of agreement validity in seconds
+     * @param transferDeadline Deadline for MCU transfer in seconds from now
+     * @param correspondingAdjustmentRef Reference to corresponding adjustment
      */
-    function initializeITMOAgreement(
-        string calldata itmoId,
-        string calldata projectName,
-        ProjectType projectType,
-        address originatingCountry,
-        address[] calldata requiredSigners,
-        EmissionReductions calldata emissionData,
-        bytes32 metadataHash,
-        string calldata agreementTerms,
-        string calldata monitoringRequirements,
-        string calldata validityPeriod,
-        address[] calldata involvedParties
+    function initializeAgreement(
+        uint256 agreementId,  // Change from string to uint256
+        address seller,
+        address buyer,
+        uint256 mcuAmount,
+        uint256 pricePerMCU,
+        string calldata paymentCurrency,
+        PaymentMethod paymentMethod,
+        uint256 validityPeriod,
+        uint256 transferDeadline,
+        string calldata correspondingAdjustmentRef
     ) 
         external 
         onlyRole(UNFCCC_ROLE)
         whenNotPaused 
         returns (uint256)
     {
-        require(bytes(itmoId).length > 0, "Invalid ITMO ID");
-        require(bytes(projectName).length > 0, "Invalid project name");
-        require(requiredSigners.length >= 2, "Minimum two signers required");
-        require(emissionData.totalEmissionReduction > 0, "Invalid emission reduction");
-        require(metadataHash != bytes32(0), "Invalid metadata hash");
+        require(agreementId > 0, "Invalid agreement ID");  // Ensure agreementId is valid
+        require(seller != address(0) && buyer != address(0), "Invalid addresses");
+        require(mcuAmount > 0, "Invalid MCU amount");
+        require(pricePerMCU > 0, "Invalid price");
+        require(hasRole(COUNTRY_ROLE, seller) && hasRole(COUNTRY_ROLE, buyer), "Invalid country roles");
+        require(transferDeadline > block.timestamp, "Invalid deadline");
 
-        uint256 agreementId = nextAgreementId++;
         ITMOAgreement storage agreement = agreements[agreementId];
-        
+
         // Initialize agreement
-        agreement.itmoId = itmoId;
-        agreement.projectName = projectName;
-        agreement.projectType = projectType;
-        agreement.originatingCountry = originatingCountry;
-        agreement.requiredSigners = requiredSigners;
-        agreement.emissionReductions = emissionData;
+        agreement.agreementId = agreementId;  // Now both are uint256
+        agreement.sellerCountry = seller;
+        agreement.buyerCountry = buyer;
+        agreement.mcuAmount = mcuAmount;
+        agreement.pricePerMCU = pricePerMCU;
+        agreement.paymentCurrency = paymentCurrency;
+        agreement.paymentMethod = paymentMethod;
         agreement.status = AgreementStatus.SignaturePending;
         agreement.createdAt = block.timestamp;
-        agreement.metadataHash = metadataHash;
-        agreement.agreementTerms = agreementTerms;
-        agreement.monitoringRequirements = monitoringRequirements;
-        agreement.validityPeriod = validityPeriod;
-        agreement.involvedParties = involvedParties;
+        agreement.validUntil = block.timestamp + validityPeriod;
+        agreement.transferDeadline = block.timestamp + transferDeadline;
+        agreement.isBilateral = true;
+        agreement.correspondingAdjustmentRef = correspondingAdjustmentRef;
 
-        // Verify all signers are registered countries
-        for (uint i = 0; i < requiredSigners.length; i++) {
-            require(
-                hasRole(COUNTRY_ROLE, requiredSigners[i]), 
-                "Invalid signer address"
-            );
-        }
-
-        emit ITMOAgreementInitialized(
+        emit AgreementInitialized(
             agreementId,
-            itmoId,
-            projectName,
-            originatingCountry,
-            emissionData.totalEmissionReduction
+            seller,
+            buyer,
+            mcuAmount,
+            pricePerMCU,
+            paymentCurrency
         );
         return agreementId;
     }
 
     /**
-     * @dev Register a new country
-     * @param country Address of the country to register
+     * @dev Sign an agreement
+     * @param agreementId ID of the agreement to sign
      */
-    function registerCountry(address country) 
+    function signAgreement(uint256 agreementId) 
         external 
-        onlyRole(UNFCCC_ROLE) 
+        onlyRole(COUNTRY_ROLE)
+        whenNotPaused 
+    {
+        ITMOAgreement storage agreement = agreements[agreementId];
+        require(
+            agreement.status == AgreementStatus.SignaturePending,
+            "Agreement not in signing phase"
+        );
+        require(
+            msg.sender == agreement.sellerCountry || msg.sender == agreement.buyerCountry,
+            "Not authorized to sign"
+        );
+        require(!agreement.hasSigned[msg.sender], "Already signed");
+
+        agreement.hasSigned[msg.sender] = true;
+        agreement.signatureCount++;
+
+        emit AgreementSigned(agreementId, msg.sender);
+
+        if (agreement.signatureCount == 2) {  // Both parties have signed
+            agreement.status = AgreementStatus.AllSignaturesCollected;
+            emit AllSignaturesCollected(agreementId);
+        }
+    }
+
+    /**
+     * @dev Activate an agreement after all signatures are collected
+     * @param agreementId ID of the agreement to activate
+     */
+    function activateAgreement(uint256 agreementId) 
+        external 
+        onlyRole(UNFCCC_ROLE)
+        whenNotPaused 
+    {
+        ITMOAgreement storage agreement = agreements[agreementId];
+        require(
+            agreement.status == AgreementStatus.AllSignaturesCollected,
+            "Not ready for activation"
+        );
+        require(block.timestamp <= agreement.validUntil, "Agreement expired");
+
+        agreement.status = AgreementStatus.Active;
+        emit AgreementActivated(agreementId);
+    }
+
+    /**
+     * @dev Mark an agreement as completed
+     * @param agreementId ID of the agreement to complete
+     */
+    function completeAgreement(uint256 agreementId)
+        external
+        onlyRole(UNFCCC_ROLE)
         whenNotPaused
     {
-        require(country != address(0), "Invalid country address");
-        require(!hasRole(COUNTRY_ROLE, country), "Country already registered");
+        ITMOAgreement storage agreement = agreements[agreementId];
+        require(agreement.status == AgreementStatus.Active, "Agreement not active");
         
-        _grantRole(COUNTRY_ROLE, country);
-        emit CountryRegistered(country);
+        agreement.status = AgreementStatus.Completed;
+        emit AgreementCompleted(agreementId);
+    }
+
+    /**
+     * @dev Get agreement details
+     * @param agreementId ID of the agreement
+     */
+    function getAgreementDetails(uint256 agreementId)
+    external
+    view
+    returns (
+        uint256 agreementRef,  // Change from string to uint256
+        address seller,
+        address buyer,
+        uint256 mcuAmount,
+        uint256 pricePerMCU,
+        string memory paymentCurrency,
+        PaymentMethod paymentMethod,
+        AgreementStatus status,
+        uint256 createdAt,
+        uint256 validUntil,
+        uint256 transferDeadline,
+        string memory correspondingAdjustmentRef
+    )
+{
+    ITMOAgreement storage agreement = agreements[agreementId];
+    return (
+        agreement.agreementId,  // Now returns uint256
+        agreement.sellerCountry,
+        agreement.buyerCountry,
+        agreement.mcuAmount,
+        agreement.pricePerMCU,
+        agreement.paymentCurrency,
+        agreement.paymentMethod,
+        agreement.status,
+        agreement.createdAt,
+        agreement.validUntil,
+        agreement.transferDeadline,
+        agreement.correspondingAdjustmentRef
+    )  ;
     }
 
     /**
@@ -203,106 +281,10 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
     function unpause() external onlyRole(UNFCCC_ROLE) {
         _unpause();
     }
-
-    /**
-     * @dev Sign an agreement
-     * @param agreementId ID of the agreement to sign
-     */
-    function signAgreement(uint256 agreementId) 
-        external 
-        onlyRole(COUNTRY_ROLE)
-        whenNotPaused 
-    {
-        ITMOAgreement storage agreement = agreements[agreementId];
-        require(
-            agreement.status == AgreementStatus.SignaturePending,
-            "Agreement not in signing phase"
-        );
-
-        bool isRequiredSigner = false;
-        for (uint i = 0; i < agreement.requiredSigners.length; i++) {
-            if (agreement.requiredSigners[i] == msg.sender) {
-                isRequiredSigner = true;
-                break;
-            }
-        }
-        require(isRequiredSigner, "Not authorized to sign");
-        require(!agreement.hasSigned[msg.sender], "Already signed");
-
-        agreement.hasSigned[msg.sender] = true;
-        agreement.signatureCount++;
-
-        emit AgreementSigned(agreementId, msg.sender);
-
-        if (agreement.signatureCount == agreement.requiredSigners.length) {
-            agreement.status = AgreementStatus.AllSignaturesCollected;
-            emit AllSignaturesCollected(agreementId);
-        }
-    }
-
-    /**
-     * @dev Activate an agreement after all signatures are collected
-     * @param agreementId ID of the agreement to activate
-     */
-    function activateAgreement(uint256 agreementId) 
-        external 
-        onlyRole(UNFCCC_ROLE)
-        whenNotPaused 
-    {
-        ITMOAgreement storage agreement = agreements[agreementId];
-        require(
-            agreement.status == AgreementStatus.AllSignaturesCollected,
-            "Not ready for activation"
-        );
-
-        agreement.status = AgreementStatus.Active;
-        agreement.activatedAt = block.timestamp;
-
-        emit AgreementActivated(agreementId);
-    }
-
-    /**
-     * @dev Get detailed ITMO agreement information
-     * @param agreementId ID of the agreement
-     */
-    function getITMOAgreementDetails(uint256 agreementId) 
-        external 
-        view 
-        returns (
-            string memory itmoId,
-            string memory projectName,
-            ProjectType projectType,
-            address originatingCountry,
-            uint256 totalEmissionReduction,
-            address[] memory requiredSigners,
-            uint256 signatureCount,
-            AgreementStatus status,
-            uint256 createdAt,
-            uint256 activatedAt,
-            bytes32 metadataHash,
-            string memory agreementTerms,
-            string memory monitoringRequirements,
-            string memory validityPeriod,
-            address[] memory involvedParties
-        )
-    {
-        ITMOAgreement storage agreement = agreements[agreementId];
-        return (
-            agreement.itmoId,
-            agreement.projectName,
-            agreement.projectType,
-            agreement.originatingCountry,
-            agreement.emissionReductions.totalEmissionReduction,
-            agreement.requiredSigners,
-            agreement.signatureCount,
-            agreement.status,
-            agreement.createdAt,
-            agreement.activatedAt,
-            agreement.metadataHash,
-            agreement.agreementTerms,
-            agreement.monitoringRequirements,
-            agreement.validityPeriod,
-            agreement.involvedParties
-        );
+    // Add this function to the ITMORegistry contract
+    function registerCountry(address country) external onlyRole(UNFCCC_ROLE) {
+        require(country != address(0), "Invalid address");
+        require(!hasRole(COUNTRY_ROLE, country), "Country already registered");
+        _grantRole(COUNTRY_ROLE, country);
     }
 }
