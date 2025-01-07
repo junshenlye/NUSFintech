@@ -1,6 +1,43 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
+import { ethers } from "ethers";
 
 export default function LandingPage() {
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [isRequesting, setIsRequesting] = useState(false);
+
+  const handleAuthentication = async () => {
+    if (!window.ethereum) {
+      alert("MetaMask is not installed. Please install it to use this feature.");
+      return;
+    }
+
+    // Prevent multiple requests
+    if (isRequesting) {
+      console.log("A request is already pending. Please wait.");
+      return;
+    }
+
+    setIsRequesting(true);
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await provider.send("eth_requestAccounts", []);
+
+      // Set wallet address
+      const address = accounts[0];
+      setWalletAddress(address);
+
+      console.log("Connected wallet address:", address);
+    } catch (error) {
+      console.error("Error during wallet authentication:", error);
+    } finally {
+      setIsRequesting(false);
+    }
+  };
+
   return (
     <div style={styles.container}>
       {/* Header Section */}
@@ -15,9 +52,10 @@ export default function LandingPage() {
           />
           SWI Carbon Credits
         </h1>
-        <button style={styles.button}>Authentication</button>
+        <button style={styles.button} onClick={handleAuthentication}>
+          {walletAddress ? "Wallet Connected" : "Authenticate"}
+        </button>
       </header>
-
 
       {/* Main Content */}
       <main style={styles.main}>
@@ -53,6 +91,13 @@ export default function LandingPage() {
           style={styles.globeImage}
         />
       </div>
+
+      {/* Wallet Address */}
+      {walletAddress && (
+        <p style={styles.walletInfo}>
+          Connected Wallet: <span>{walletAddress}</span>
+        </p>
+      )}
     </div>
   );
 }
@@ -60,29 +105,18 @@ export default function LandingPage() {
 const styles: any = {
   container: {
     fontFamily: "'Arial', sans-serif",
-    backgroundColor: "#083142", // Base color (dark blue)
-    backgroundImage: "linear-gradient(to bottom, #083142, #2C521F)", // Gradient colors (blue to green)
-    backgroundSize: "cover", // Ensure the background covers the entire container
-    backgroundPosition: "center center", // Position the background at the center
-    backgroundRepeat: "no-repeat", // Ensure the background does not repeat
+    backgroundColor: "#083142",
+    backgroundImage: "linear-gradient(to bottom, #083142, #2C521F)",
+    backgroundSize: "cover",
+    backgroundPosition: "center center",
+    backgroundRepeat: "no-repeat",
     color: "white",
     minHeight: "100vh",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     padding: "2rem",
-    position: "relative", // Ensure it's properly positioned
-  },
-  noise: {
-    position: "absolute", // Position the noise texture over the background
-    top: "0",
-    left: "0",
-    width: "100%",
-    height: "100%",
-    backgroundImage: "url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...')", // Base64 noise image
-    backgroundSize: "cover", // Ensure noise texture covers the entire container
-    opacity: "0.2", // Set opacity for the noise effect
-    pointerEvents: "none", // Ensure noise does not block interactions with the page
+    position: "relative",
   },
   header: {
     display: "flex",
@@ -146,5 +180,9 @@ const styles: any = {
     width: "300px",
     borderRadius: "50%",
   },
+  walletInfo: {
+    marginTop: "2rem",
+    fontSize: "1rem",
+    color: "#fff",
+  },
 };
-
