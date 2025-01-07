@@ -96,7 +96,7 @@ async function main() {
         const countryBAnalysis = await getProjectAnalysis(countryB.address, "Country B (Buyer)");
 
         // Get agreement details
-        const agreementId = 1736259947631;
+        const agreementId = 1736263379355;
         console.log("\n📄 Agreement Details:");
         const agreement = await itmoRegistry.getAgreementDetails(agreementId);
         

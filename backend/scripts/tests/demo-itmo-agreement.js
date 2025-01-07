@@ -77,7 +77,7 @@ async function main() {
         console.log("\n🚀 Initializing Agreement...");
         const agreementId = Date.now(); // Use a unique ID for each run
         const mcuAmount = hre.ethers.parseUnits("20", 0); // 1000 MCUs
-        const pricePerMCU = hre.ethers.parseEther("0.1"); // 0.1 XRP per MCU
+        const pricePerMCU = hre.ethers.parseEther("0.2"); // 0.1 XRP per MCU
 
         const initTx = await registry.initializeAgreement(
             agreementId,

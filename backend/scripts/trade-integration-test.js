@@ -35,14 +35,21 @@ async function main() {
         // Create contract instances
         const itmoRegistry = new hre.ethers.Contract(itmoRegistryAddress, ITMO_ABI, provider);
         const mcuRegistry = new hre.ethers.Contract(mcuRegistryAddress, MCU_ABI, provider);
-        const tradeManager = new hre.ethers.Contract(tradeManagerAddress, TRADE_MANAGER_ABI, countryB); // Connect as buyer
+        const tradeManager = new hre.ethers.Contract(tradeManagerAddress, TRADE_MANAGER_ABI, countryB);
 
         // Setup trade parameters
-        const agreementId = 1736259947631n;
+        const agreementId = 1736263379355;
         const projectIds = [5];
         const mcuAmounts = [20];
 
-        // Get initial balances
+        // Get initial XRP balances
+        console.log("\n💰 Initial XRP Balances:");
+        const initialSellerXRP = await provider.getBalance(countryA.address);
+        const initialBuyerXRP = await provider.getBalance(countryB.address);
+        console.log(`Country A: ${hre.ethers.formatEther(initialSellerXRP)} XRP`);
+        console.log(`Country B: ${hre.ethers.formatEther(initialBuyerXRP)} XRP`);
+
+        // Get initial MCU balances
         console.log("\n💰 Initial MCU Balances:");
         const initialSellerBalance = await mcuRegistry.balanceOf(countryA.address, projectIds[0]);
         const initialBuyerBalance = await mcuRegistry.balanceOf(countryB.address, projectIds[0]);
@@ -73,17 +80,28 @@ async function main() {
         console.log("Trade executed successfully!");
         console.log("Transaction Hash:", receipt.hash);
 
-        // Get final balances
+        // Get final XRP balances
+        console.log("\n💰 Final XRP Balances:");
+        const finalSellerXRP = await provider.getBalance(countryA.address);
+        const finalBuyerXRP = await provider.getBalance(countryB.address);
+        console.log(`Country A: ${hre.ethers.formatEther(finalSellerXRP)} XRP`);
+        console.log(`Country B: ${hre.ethers.formatEther(finalBuyerXRP)} XRP`);
+
+        // Get final MCU balances
         console.log("\n💰 Final MCU Balances:");
         const finalSellerBalance = await mcuRegistry.balanceOf(countryA.address, projectIds[0]);
         const finalBuyerBalance = await mcuRegistry.balanceOf(countryB.address, projectIds[0]);
         console.log(`Country A (Project ${projectIds[0]}): ${finalSellerBalance} MCUs`);
         console.log(`Country B (Project ${projectIds[0]}): ${finalBuyerBalance} MCUs`);
 
-        // Log balance changes
-        console.log("\n📈 Balance Changes:");
-        console.log(`Seller MCU Change: ${finalSellerBalance - initialSellerBalance} MCUs`);
-        console.log(`Buyer MCU Change: ${finalBuyerBalance - initialBuyerBalance} MCUs`);
+        // Log all balance changes
+        console.log("\n📈 Balance Changes Summary:");
+        console.log("XRP Changes:");
+        console.log(`Country A: ${hre.ethers.formatEther(finalSellerXRP - initialSellerXRP)} XRP`);
+        console.log(`Country B: ${hre.ethers.formatEther(finalBuyerXRP - initialBuyerXRP)} XRP`);
+        console.log("\nMCU Changes:");
+        console.log(`Country A: ${finalSellerBalance - initialSellerBalance} MCUs`);
+        console.log(`Country B: ${finalBuyerBalance - initialBuyerBalance} MCUs`);
 
     } catch (error) {
         console.error("\n❌ Error:", error);
