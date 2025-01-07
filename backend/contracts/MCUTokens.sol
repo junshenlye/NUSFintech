@@ -66,7 +66,7 @@ contract MCUProjectRegistry is ERC1155, AccessControl, Pausable {
         mapping(string => string) additionalData; // Flexible additional data storage
     }
 
-    // Define a new struct for returning project details
+    // Define ProjectView struct to return project details
     struct ProjectView {
         string projectId;
         string projectName;
@@ -104,14 +104,24 @@ contract MCUProjectRegistry is ERC1155, AccessControl, Pausable {
     Counters.Counter private _projectIds;
     mapping(uint256 => Project) public projects;
     mapping(address => uint256[]) public countryProjects;
-    
+
+    // Token Ownership History
+    struct TokenHistory {
+        address from;       // Address of the sender
+        address to;         // Address of the recipient
+        uint256 amount;     // Amount of tokens transferred
+        uint256 timestamp;  // Timestamp of the transfer
+    }
+
+    mapping(uint256 => TokenHistory[]) public tokenHistory; // Token ID => Ownership history
+
     // Events
     event ProjectRegistered(
-        uint256 indexed projectId,      // Unique identifier for the project
-        address indexed countryOwner,   // Address of the country owning the project
-        string projectIdentifier,       // Unique project identifier (renamed from projectId)
-        string projectName,             // Name of the project
-        ProjectType projectType         // Type of the project
+        uint256 indexed projectId,
+        address indexed countryOwner,
+        string projectIdentifier, // Renamed to avoid duplicate parameter name
+        string projectName,
+        ProjectType projectType
     );
 
     event CarbonReductionValidated(
@@ -131,6 +141,14 @@ contract MCUProjectRegistry is ERC1155, AccessControl, Pausable {
         uint256 totalEmissionReduction,
         uint256 verifiedReductions,
         uint256 tokensMinted
+    );
+
+    event TokenTransfer(
+        uint256 indexed projectId,
+        address indexed from,
+        address indexed to,
+        uint256 amount,
+        uint256 timestamp
     );
 
     /**
@@ -201,7 +219,7 @@ contract MCUProjectRegistry is ERC1155, AccessControl, Pausable {
         emit ProjectRegistered(
             newProjectId,
             msg.sender,
-            projectId,
+            projectId, // projectIdentifier
             projectName,
             projectType
         );
@@ -246,52 +264,93 @@ contract MCUProjectRegistry is ERC1155, AccessControl, Pausable {
         emit TokensMinted(projectId, project.countryOwner, tokensToMint);
     }
 
-    function addProjectDocument(uint256 projectId, string calldata documentHash)
-        external
-        onlyRole(UNFCCC_ROLE)
-        whenNotPaused
-    {
+    /**
+     * @dev Transfer tokens from one address to another
+     * @param from Address of the sender
+     * @param to Address of the recipient
+     * @param projectId ID of the project (token ID)
+     * @param amount Number of tokens to transfer
+     */
+    function transferTokens(
+        address from,
+        address to,
+        uint256 projectId,
+        uint256 amount
+    ) external onlyRole(COUNTRY_ROLE) whenNotPaused {
         require(projects[projectId].exists, "Project does not exist");
-        Project storage project = projects[projectId];
-        project.documents.push(documentHash);
-    }
+        require(from != address(0), "Invalid sender address");
+        require(to != address(0), "Invalid recipient address");
+        require(amount > 0, "Amount must be greater than 0");
 
-    function getProjectDocuments(uint256 projectId)
-        external
-        view
-        returns (string[] memory)
-    {
-        require(projects[projectId].exists, "Project does not exist");
-        return projects[projectId].documents;
+        // Check if the sender has enough tokens
+        uint256 senderBalance = balanceOf(from, projectId);
+        require(senderBalance >= amount, "Insufficient token balance");
+
+        // Transfer tokens
+        _safeTransferFrom(from, to, projectId, amount, "");
+
+        // Log the transfer in the token history
+        tokenHistory[projectId].push(TokenHistory({
+            from: from,
+            to: to,
+            amount: amount,
+            timestamp: block.timestamp
+        }));
+
+        // Emit a custom event
+        emit TokenTransfer(projectId, from, to, amount, block.timestamp);
     }
 
     /**
-    * @dev Get project details
-    * @param projectId ID of the project
-    */
+     * @dev Get the total tokens minted for a country across all projects
+     * @param country Address of the country
+     */
+    function getTotalTokensMinted(address country) external view returns (uint256) {
+        uint256[] memory projectIds = countryProjects[country];
+        uint256 totalTokens = 0;
+
+        for (uint256 i = 0; i < projectIds.length; i++) {
+            totalTokens += projects[projectIds[i]].tokensMinted;
+        }
+
+        return totalTokens;
+    }
+
+    /**
+     * @dev Get the ownership history for a specific project
+     * @param projectId ID of the project
+     */
+    function getTokenHistory(uint256 projectId) external view returns (TokenHistory[] memory) {
+        return tokenHistory[projectId];
+    }
+
+    /**
+     * @dev Get project details
+     * @param projectId ID of the project
+     */
     function getProject(uint256 projectId) 
         external 
         view 
         returns (ProjectView memory) 
     {
-    require(projects[projectId].exists, "Project does not exist");
-    Project storage project = projects[projectId];
+        require(projects[projectId].exists, "Project does not exist");
+        Project storage project = projects[projectId];
 
-    // Create a ProjectView struct to return the project details
-    return ProjectView({
-        projectId: project.projectId,
-        projectName: project.projectName,
-        description: project.description,
-        countryOwner: project.countryOwner,
-        projectType: project.projectType,
-        registry: project.registry,
-        emissionData: project.emissionData,
-        tokensMinted: project.tokensMinted,
-        status: project.status,
-        createdAt: project.createdAt,
-        validatedAt: project.validatedAt,
-        documents: project.documents
-    });
+        // Create a ProjectView struct to return the project details
+        return ProjectView({
+            projectId: project.projectId,
+            projectName: project.projectName,
+            description: project.description,
+            countryOwner: project.countryOwner,
+            projectType: project.projectType,
+            registry: project.registry,
+            emissionData: project.emissionData,
+            tokensMinted: project.tokensMinted,
+            status: project.status,
+            createdAt: project.createdAt,
+            validatedAt: project.validatedAt,
+            documents: project.documents
+        });
     }
 
 

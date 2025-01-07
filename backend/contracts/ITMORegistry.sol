@@ -129,7 +129,7 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
 
         uint256 agreementId = nextAgreementId++;
         ITMOAgreement storage agreement = agreements[agreementId];
-
+        
         // Initialize agreement
         agreement.itmoId = itmoId;
         agreement.projectName = projectName;

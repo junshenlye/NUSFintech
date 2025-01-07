@@ -41,31 +41,38 @@ async function main() {
     console.log(`Country B: ${initialBalances.countryB} ETH`);
 
     try {
-        // Attach to the existing MCUProjectRegistry contract
-        const registryAddress = "0xfeF5A32E342A1C6ca9d0D44D4A8389E2D7454235";
-        const MCUProjectRegistry = await hre.ethers.getContractFactory("MCUProjectRegistry");
+        const registryAddress = "0xdf3117fE0daA4CC09B8181AbB3eDC35cB179c42C";
+        const MCUProjectRegistry = await hre.ethers.getContractFactory("MCURegistry");
         const registry = MCUProjectRegistry.attach(registryAddress);
         console.log(`Attached to existing MCUProjectRegistry at: ${registryAddress}`);
 
-        // Grant COUNTRY_ROLE to Country A only
-        console.log("\n🏛️ Granting COUNTRY_ROLE to Country A...");
-        const COUNTRY_ROLE = hre.ethers.keccak256(hre.ethers.toUtf8Bytes("COUNTRY_ROLE"));
-        const grantRoleTx = await registry.connect(unfccc).grantRole(COUNTRY_ROLE, countryA.address);
-        await grantRoleTx.wait();
-        console.log(`Country A (${countryA.address}) granted COUNTRY_ROLE`);
+        // Grant COUNTRY_ROLE to Country A and Country B
+        console.log("\n🏛️ Granting COUNTRY_ROLE to Country A and Country B...");
+        const COUNTRY_ROLE = await registry.COUNTRY_ROLE();
+        const grantRoleTx1 = await registry.connect(unfccc).grantRole(COUNTRY_ROLE, countryA.address);
+        await grantRoleTx1.wait();
+        const grantRoleTx2 = await registry.connect(unfccc).grantRole(COUNTRY_ROLE, countryB.address);
+        await grantRoleTx2.wait();
+
+        // Verify that Country A has the COUNTRY_ROLE
+        const hasRole = await registry.hasRole(COUNTRY_ROLE, countryA.address);
+        if (!hasRole) {
+            throw new Error("Country A does not have the COUNTRY_ROLE");
+        }
+        console.log(`Country A (${countryA.address}) and Country B (${countryB.address}) granted COUNTRY_ROLE`);
 
         // Register a Project by Country A
         console.log("\n📄 Registering a Project by Country A...");
-        const projectId = "PROJECT001";
-        const projectName = "Solar Farm Project";
+        const projectId = "PROJECT002";
+        const projectName = "Solar Pannel Global Project 2";
         const description = "A project to build a solar farm.";
         const projectType = 0; // RenewableEnergy
-        const registrySystem = "BlockchainPlatformXYZ";
-        const hostCountryRegistry = "Registry ABC";
+        const registrySystem = "XRP";
+        const hostCountryRegistry = "A";
         const emissionData = {
-            totalEmissionReduction: 0,
-            baselineEmissions: 10000,
-            verifiedReductions: 0,
+            totalEmissionReduction: 50,
+            baselineEmissions: 500000,
+            verifiedReductions: 2000,
             emissionUnit: "tCO2e",
             isVerified: false,
         };
@@ -79,41 +86,51 @@ async function main() {
             hostCountryRegistry,
             emissionData
         );
-        await registerTx.wait();
-        console.log(`Project "${projectName}" registered by Country A`);
+        const receipt = await registerTx.wait();
+
+        // Parse logs manually
+        const iface = new hre.ethers.Interface([
+            "event ProjectRegistered(uint256 indexed projectId, address indexed countryOwner, string projectIdentifier, string projectName, uint8 projectType)"
+        ]);
+
+        const projectRegisteredEvent = receipt.logs
+            .map((log) => {
+                try {
+                    return iface.parseLog(log);
+                } catch (e) {
+                    return null;
+                }
+            })
+            .find((e) => e?.name === "ProjectRegistered");
+
+        if (!projectRegisteredEvent) {
+            throw new Error("ProjectRegistered event not found");
+        }
+
+        const newProjectId = projectRegisteredEvent.args.projectId;
+        console.log(`Project "${projectName}" registered by Country A with ID: ${newProjectId}`);
 
         // Validate Carbon Reduction and Mint Tokens
         console.log("\n🔄 Validating Carbon Reduction and Minting Tokens...");
-        const carbonReduction = 5000; // 5000 tCO2e
-        const validateTx = await registry.connect(unfccc).validateAndMintTokens(0, carbonReduction);
+        const carbonReduction = 2000; // equal to the verified reductions
+        const validateTx = await registry.connect(unfccc).validateAndMintTokens(newProjectId, carbonReduction);
         await validateTx.wait();
         console.log(`Carbon reduction of ${carbonReduction} tCO2e validated and tokens minted`);
 
         // Check Token Balance for Country A
         const tokensMinted = carbonReduction / 1000; // 1 MCU = 1000 tCO2e
-        const balance = await registry.balanceOf(countryA.address, 0);
+        const balance = await registry.balanceOf(countryA.address, newProjectId);
         console.log(`Country A's MCU Token Balance: ${balance.toString()} tokens`);
-
-        // Add a Project Document
-        console.log("\n📂 Adding a Project Document...");
-        const documentHash = "QmXYZ123";
-        const addDocTx = await registry.connect(unfccc).addProjectDocument(0, documentHash);
-        await addDocTx.wait();
-        console.log(`Document with hash ${documentHash} added to the project`);
-
-        // Get Project Documents
-        const documents = await registry.getProjectDocuments(0);
-        console.log(`Project Documents: ${documents}`);
 
         // Update Project Status
         console.log("\n🔄 Updating Project Status to Active...");
-        const updateStatusTx = await registry.connect(unfccc).updateProjectStatus(0, 2); // Active
+        const updateStatusTx = await registry.connect(unfccc).updateProjectStatus(newProjectId, 2); // Active
         await updateStatusTx.wait();
         console.log("Project status updated to Active");
 
         // Get Final Project Details
         console.log("\n📊 Final Project Details:");
-        const projectDetails = await registry.getProject(0);
+        const projectDetails = await registry.getProject(newProjectId);
         console.log(`Project Name: ${projectDetails.projectName}`);
         console.log(`Description: ${projectDetails.description}`);
         console.log(`Country Owner: ${projectDetails.countryOwner}`);
