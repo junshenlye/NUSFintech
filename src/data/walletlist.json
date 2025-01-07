@@ -1,0 +1,45 @@
+{
+    "countries": [
+      {
+        "country": "United States",
+        "wallet_address": "0x1234abcd5678efgh9012ijkl3456mnop7890qrst"
+      },
+      {
+        "country": "Canada",
+        "wallet_address": "0xabcd1234efgh5678ijkl9012mnop3456qrst7890"
+      },
+      {
+        "country": "Germany",
+        "wallet_address": "0xefghabcd1234ijkl5678mnop9012qrst34567890"
+      },
+      {
+        "country": "Japan",
+        "wallet_address": "0xijklmnop1234qrst5678abcd9012efgh34567890"
+      },
+      {
+        "country": "Australia",
+        "wallet_address": "0xmnopabcd5678qrst1234efgh9012ijkl34567890"
+      },
+      {
+        "country": "India",
+        "wallet_address": "0xqrst1234ijkl5678abcd9012mnop3456efgh7890"
+      },
+      {
+        "country": "United Kingdom",
+        "wallet_address": "0xijkl9012mnop3456qrst5678abcd1234efgh7890"
+      },
+      {
+        "country": "Singapore",
+        "wallet_address": "0x5678mnopabcd9012efgh1234ijkl3456qrst7890"
+      },
+      {
+        "country": "Brazil",
+        "wallet_address": "0xabcd5678ijkl9012mnop3456qrst1234efgh7890"
+      },
+      {
+        "country": "South Africa",
+        "wallet_address": "0x9012qrstabcd5678ijkl3456mnop1234efgh7890"
+      }
+    ]
+  }
+  
