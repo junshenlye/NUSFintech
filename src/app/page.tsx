@@ -8,6 +8,7 @@ export default function LandingPage(){
         <h1 style={styles.logo}>
           <Image
             src="/carbon-credits-logo.png"
+            alt=""
             width={40}
             height={40}
             style={styles.logoImage}
