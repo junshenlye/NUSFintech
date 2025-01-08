@@ -118,6 +118,9 @@ async function main() {
         });
 
         // Execute the trade
+        const COUNTRY_ROLE = await registry.COUNTRY_ROLE();
+        console.log(COUNTRY_ROLE)
+        return 
         const tradeTx = await tradeManager.executeTrade(
             agreementId,
             projectIds,

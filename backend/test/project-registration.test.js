@@ -13,37 +13,50 @@ const {
 
 async function main() {
     console.log("\n🌍 MCU Project Registration Interactive Test\n");
-    // Add this before project registration in project-registration.test.js
-    const COUNTRY_ROLE = await registry.COUNTRY_ROLE();
-
-    // Get the signer's address
-    const [signer] = await hre.ethers.getSigners();
-    const signerAddress = await signer.getAddress();
-
-    // Check if signer has COUNTRY_ROLE
-    const hasRole = await registry.hasRole(COUNTRY_ROLE, signerAddress);
-    if (!hasRole) {
-        console.log("\n⚠️ Account does not have COUNTRY_ROLE. Attempting to get role from UNFCCC...");
-        
-        // Connect as UNFCCC admin
-        const unfccc = new hre.ethers.Wallet(
-            process.env.PRIVATE_KEY,  // UNFCCC private key from .env
-            hre.ethers.provider
-        );
-        
-        // Grant COUNTRY_ROLE to the signer
-        const grantRoleTx = await registry.connect(unfccc).grantRole(COUNTRY_ROLE, signerAddress);
-        await grantRoleTx.wait();
-        console.log("✅ COUNTRY_ROLE granted successfully");
-    }
-    return
 
     try {
         // Get MCU Registry contract
         const registryAddress = "0xdf3117fE0daA4CC09B8181AbB3eDC35cB179c42C";
         const MCUProjectRegistry = await hre.ethers.getContractFactory("MCURegistry");
-        const registry = MCUProjectRegistry.attach(registryAddress);
 
+        const registry = MCUProjectRegistry.attach(registryAddress);
+        const COUNTRY_ROLE = await registry.COUNTRY_ROLE();
+        console.log(COUNTRY_ROLE)
+
+        // Get the signer's address
+    //    const [signer] = await hre.ethers.getSigners();
+    //const signerAddress = await signer.getAddress();
+    //   #console.log(signerAddress, signer)
+        // Verify the address matches
+        const countryAddress = await question("What is your address: ");
+        const countryPrivateKey = await question("Enter your private key: ");
+
+        // Create wallet instance from the provided private key
+        const country = new hre.ethers.Wallet(countryPrivateKey, hre.ethers.provider);
+
+        if (country.address.toLowerCase() !== countryAddress.toLowerCase()) {
+            throw new Error("Address and private key do not match");
+        }
+        const countryRegistry = registry.connect(country);
+
+        // Check if signer has COUNTRY_ROLE
+        const hasRole = await registry.hasRole(COUNTRY_ROLE, countryAddress);
+        console.log(hasRole)
+        if (!hasRole) {
+            console.log(countryAddress)
+            console.log("\n⚠️ Account does not have COUNTRY_ROLE. Attempting to get role from UNFCCC...");
+            
+            // Connect as UNFCCC admin
+            const unfccc = new hre.ethers.Wallet(
+                process.env.PRIVATE_KEY,  // UNFCCC private key from .env
+                hre.ethers.provider
+            );
+            
+            // Grant COUNTRY_ROLE to the signer
+            const grantRoleTx = await registry.connect(unfccc).grantRole(COUNTRY_ROLE, countryAddress);
+            await grantRoleTx.wait();
+            console.log("✅ COUNTRY_ROLE granted successfully");
+        }
         // Get user input for project details
         console.log("📝 Please enter project details:");
         
@@ -98,7 +111,7 @@ async function main() {
 
         // Register project
         console.log("\n📝 Registering project...");
-        const registerTx = await registry.registerProject(
+        const registerTx = await countryRegistry.registerProject(
             projectId,
             projectName,
             description,

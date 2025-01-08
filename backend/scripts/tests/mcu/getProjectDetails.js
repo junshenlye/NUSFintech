@@ -1,5 +1,8 @@
 const hre = require("hardhat");
 require('dotenv').config();
+const {
+    question
+} = require('../../test/utils/test-utils');
 
 async function main() {
     console.log("\n🌍 Fetching MCU Project Details\n");
@@ -137,7 +140,8 @@ async function main() {
     const contract = new hre.ethers.Contract(contractAddress, abi, provider);
 
     // Specify the project ID you want to query
-    const projectId = 10; // Replace with the actual project ID
+    //  // Replace with the actual project ID
+    const projectId = await question("Project ID: ");
 
     // Fetch project details
     console.log(`Fetching details for Project ID: ${projectId}...`);

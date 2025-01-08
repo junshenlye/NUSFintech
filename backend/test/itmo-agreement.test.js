@@ -20,10 +20,22 @@ async function main() {
         const ITMORegistry = await hre.ethers.getContractFactory("ITMORegistry");
         const registry = ITMORegistry.attach(itmoRegistryAddress);
 
+        // Get the signer and check role
+        const [signer] = await hre.ethers.getSigners();
+        console.log("Using account:", signer.address);
+
+        const UNFCCC_ROLE = await registry.UNFCCC_ROLE();
+        const hasRole = await registry.hasRole(UNFCCC_ROLE, signer.address);
+        if (!hasRole) {
+            throw new Error(`Account ${signer.address} does not have UNFCCC_ROLE`);
+        }
+
         // Get user input for agreement details
-        console.log("📝 Please enter ITMO agreement details:");
+        console.log("\n📝 Please enter ITMO agreement details:");
         
-        const agreementId = parseInt(await question("Agreement ID (numeric): "));
+        // Generate unique agreement ID using timestamp
+        const agreementId = Date.now();
+        console.log(`Generated Agreement ID: ${agreementId}`);
         
         let seller;
         do {
@@ -33,6 +45,13 @@ async function main() {
             }
         } while (!isValidAddress(seller));
 
+        // Verify seller has COUNTRY_ROLE
+        const COUNTRY_ROLE = await registry.COUNTRY_ROLE();
+        const sellerHasRole = await registry.hasRole(COUNTRY_ROLE, seller);
+        if (!sellerHasRole) {
+            throw new Error(`Seller ${seller} does not have COUNTRY_ROLE`);
+        }
+
         let buyer;
         do {
             buyer = await question("Buyer Country Address: ");
@@ -40,6 +59,12 @@ async function main() {
                 console.log("❌ Invalid address format. Please try again.");
             }
         } while (!isValidAddress(buyer));
+
+        // Verify buyer has COUNTRY_ROLE
+        const buyerHasRole = await registry.hasRole(COUNTRY_ROLE, buyer);
+        if (!buyerHasRole) {
+            throw new Error(`Buyer ${buyer} does not have COUNTRY_ROLE`);
+        }
 
         const mcuAmount = parseInt(await question("MCU Amount to Transfer: "));
         const pricePerMCU = parseFloat(await question("Price per MCU (in XRP): "));
@@ -55,7 +80,7 @@ async function main() {
         const validityPeriod = validityDays * 24 * 60 * 60; // Convert to seconds
 
         const transferDeadlineDays = parseInt(await question("Transfer Deadline (in days from now): "));
-        const transferDeadline = transferDeadlineDays * 24 * 60 * 60; // Convert to seconds
+        const transferDeadline = Math.floor(Date.now() / 1000) + (transferDeadlineDays* 24 * 60 * 60); // Convert to seconds
 
         const correspondingAdjustmentRef = await question("Corresponding Adjustment Reference: ");
 
@@ -75,6 +100,7 @@ async function main() {
             console.log("Agreement creation cancelled.");
             process.exit(0);
         }
+        console.log(transferDeadline);
 
         // Initialize agreement
         console.log("\n📝 Creating ITMO agreement...");

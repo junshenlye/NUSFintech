@@ -1,5 +1,8 @@
 const hre = require("hardhat");
 require('dotenv').config();
+const {
+    question
+} = require('../../test/utils/test-utils');
 
 async function main() {
     console.log("\n🌍 Fetching ITMO Agreement Details\n");
@@ -108,7 +111,7 @@ async function main() {
     const contract = new hre.ethers.Contract(contractAddress, abi, provider);
 
     // Specify the agreement ID you want to query
-    const agreementId = 0; // Replace with the actual agreement ID
+    const agreementId = await question("Agreement ID: "); // Replace with the actual agreement ID
 
     // Fetch agreement details
     console.log(`Fetching details for Agreement ID: ${agreementId}...`);

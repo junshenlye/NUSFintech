@@ -13,10 +13,24 @@ contract TokenManager is ERC1155, ProjectManager { // Inherit from ProjectManage
         address from;
         address to;
         uint256 amount;
-        uint256 timestamp;
+        uint256 timestamp
+        ;
     }
 
+
     mapping(uint256 => TokenHistory[]) public tokenHistory; // Token ID => Ownership history
+
+    // Tracking Retired Tokens
+    struct RetirementRecord {
+    uint256 projectId;
+    uint256 amount;
+    uint256 timestamp;
+    string reason;
+    bool isRetired;
+    }
+    
+    // Mapping to track retired tokens 
+    mapping(address => mapping(uint256 => RetirementRecord[])) public retirementRecords;
 
     // Events
     event CarbonReductionValidated(
@@ -36,6 +50,14 @@ contract TokenManager is ERC1155, ProjectManager { // Inherit from ProjectManage
         address indexed from,
         address indexed to,
         uint256 amount,
+        uint256 timestamp
+    );
+
+    event TokenRetired(
+        address indexed owner,
+        uint256 indexed projectId, 
+        uint256 amount,
+        string reason,
         uint256 timestamp
     );
 
@@ -150,5 +172,52 @@ contract TokenManager is ERC1155, ProjectManager { // Inherit from ProjectManage
     function getCountryProjectIds(address) internal view virtual returns (uint256[] memory) {
         // This function will be implemented in MCURegistry
         return new uint256[](0);
+    }
+
+    /** 
+    * @dev Retire tokens
+    * @param projectId ID of project
+    * @param amount Amount of tokens to retire
+    * @param reason Reason to retire
+     */
+
+    function retireTokens(
+        uint265 projectId,
+        uint256 amount,
+        string memory reason
+    ) pubic onlyRole(COUNTRY_ROLE) {
+        require(amount > 0, "Amount mst be greater than 0");
+        require(balanceOf(msg.sender, projectId) >= amount, "Insufficient balance");
+
+
+        RetirementRecord memory record = RetirementRecord({
+        projectId: projectId,
+        amount: amount,
+        timestamp: block.timestamp,
+        reason: reason,
+        isRetired: true
+    });
+
+    // Store retirement record
+    retirementRecords[msg.sender][projectId].push(record);
+
+    // Lock tokens (transfer to a designated retirement address)
+    address retirementAddress = address(0x1); // Special address for retired tokens
+    _safeTransferFrom(msg.sender, retirementAddress, projectId, amount, "");
+
+    emit TokensRetired(msg.sender, projectId, amount, reason, block.timestamp);
+    }
+
+    /**
+    * @dev Get retirement records for a specific project and owner
+    * @param owner Address of the token owner
+    * @param projectId ID of the project
+    */
+    function getRetirementRecords(address owner, uint256 projectId) 
+        external 
+        view 
+        returns (RetirementRecord[] memory) 
+    {
+        return retirementRecords[owner][projectId];
     }
 }
