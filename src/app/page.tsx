@@ -1,150 +1,209 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import countryData from "@/data/country.json";
+import { ethers } from "ethers";
 import Image from "next/image";
 
 export default function LandingPage() {
+  const [error, setError] = useState<string | null>(null);
+  const [isRequesting, setIsRequesting] = useState(false);
+  const router = useRouter();
+
+  const handleAuthentication = async () => {
+    if (!window.ethereum) {
+      alert("MetaMask is not installed. Please install it to use this feature.");
+      return;
+    }
+
+    if (isRequesting) {
+      console.log("A request is already pending. Please wait.");
+      return;
+    }
+
+    setIsRequesting(true);
+    setError(null);
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await provider.send("eth_requestAccounts", []);
+      const userWallet = accounts[0].toLowerCase();
+
+      const isValidUser = countryData.some(
+        (entry) => entry.wallet.toLowerCase() === userWallet
+      );
+
+      if (isValidUser) {
+        console.log("User authenticated:", userWallet);
+        router.push("/dashboard");
+      } else {
+        setError("Authentication failed. Wallet address not recognized.");
+      }
+    } catch (error) {
+      console.error("Error during authentication:", error);
+      setError("An error occurred while trying to authenticate.");
+    } finally {
+      setIsRequesting(false);
+    }
+  };
+
   return (
     <div style={styles.container}>
-      {/* Header Section */}
       <header style={styles.header}>
-        <h1 style={styles.logo}>
+        <div style={styles.logo}>
           <Image
             src="/carbon-credit-logo.png"
-            alt=""
+            alt="SWI Carbon Credits Logo"
             width={40}
             height={40}
             style={styles.logoImage}
           />
-          SWI Carbon Credits
-        </h1>
-        <button style={styles.button}>Authentication</button>
+          <span style={styles.logoText}>SWI Carbon Credits</span>
+        </div>
+        <button style={styles.authButton} onClick={handleAuthentication}>
+          <Image
+            src="/MetaMask.png"
+            alt=""
+            width={24}
+            height={24}
+            style={styles.authIcon}
+          />
+          <span>Authentication</span>
+        </button>
       </header>
 
-
-      {/* Main Content */}
       <main style={styles.main}>
-        <h2 style={styles.heading}>Future’s Unified ITMOs Trading Exchange</h2>
-
-        <section style={styles.section}>
-          <h3 style={styles.subheading}>We are currently</h3>
-          <p style={styles.text}>
+        <div style={styles.contentSection}>
+          <h1 style={styles.mainHeading}>
+            Future's Unified ITMOs Trading Exchange
+          </h1>
+          <h2 style={styles.subHeading}>We are currently</h2>
+          <p style={styles.description}>
             Building a Decentralised ITMOs Trading Platform using XRPL and EVM
-            Sidechain to ensure Transparency, Compliance and Efficiency for
-            UNFCCC regulated carbon market.
+            Sidechain to ensure Transparency, Compliance and Efficiency for UNFCCC
+            regulated carbon market.
           </p>
-        </section>
-
-        <section style={styles.section}>
-          <h3 style={styles.subheading}>Why? Because</h3>
-          <p style={styles.text}>
-            the Current ITMOs Market Suffers from Inefficiencies, Limited
-            Transparency and inadequate compliance mechanism, hindering the
-            UNFCCC’s ability to effectively regulate and enforce global carbon
+          <h2 style={styles.subHeading}>Why? Because</h2>
+          <p style={styles.description}>
+            the Current ITMOs Market Suffers from Inefficients, Limited
+            Transparency and inadequent compliance mechanism, hindering the
+            UNFCCC's ability to effectively to regulate and enforce global carbon
             reduction standards.
           </p>
-        </section>
+          {error && <p style={styles.error}>{error}</p>}
+        </div>
+        <div style={styles.imageSection}>
+          <Image
+            src="/LandingPic.png"
+            alt="Global Carbon Trading Network"
+            width={1000}
+            height={1000}
+            style={styles.globeImage}
+          />
+        </div>
       </main>
-
-      {/* Globe Image */}
-      <div style={styles.globeContainer}>
-        <Image
-          src="/LandingPic.png"
-          alt="Globe"
-          width={300}
-          height={300}
-          style={styles.globeImage}
-        />
-      </div>
     </div>
   );
 }
 
-const styles: any = {
+const styles = {
   container: {
-    fontFamily: "'Arial', sans-serif",
-    backgroundColor: "#083142", // Base color (dark blue)
-    backgroundImage: "linear-gradient(to bottom, #083142, #2C521F)", // Gradient colors (blue to green)
-    backgroundSize: "cover", // Ensure the background covers the entire container
-    backgroundPosition: "center center", // Position the background at the center
-    backgroundRepeat: "no-repeat", // Ensure the background does not repeat
-    color: "white",
     minHeight: "100vh",
+    background: "linear-gradient(135deg, #083142 0%, #2C521F 100%)",
+    color: "white",
     display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: "2rem",
-    position: "relative", // Ensure it's properly positioned
-  },
-  noise: {
-    position: "absolute", // Position the noise texture over the background
-    top: "0",
-    left: "0",
-    width: "100%",
-    height: "100%",
-    backgroundImage: "url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...')", // Base64 noise image
-    backgroundSize: "cover", // Ensure noise texture covers the entire container
-    opacity: "0.2", // Set opacity for the noise effect
-    pointerEvents: "none", // Ensure noise does not block interactions with the page
+    flexDirection: "column" as const,
   },
   header: {
     display: "flex",
     justifyContent: "space-between",
-    width: "100%",
     alignItems: "center",
+    padding: "16px",
+    background: "rgba(0, 0, 0, 0.2)",
+    backdropFilter: "blur(10px)",
   },
   logo: {
-    fontSize: "1.5rem",
-    fontWeight: "bold",
-    margin: 0,
     display: "flex",
     alignItems: "center",
+    gap: "12px",
   },
   logoImage: {
+    width: "40px",
     height: "40px",
-    marginRight: "10px",
   },
-  button: {
-    background: "#ff9800",
+  logoText: {
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+  },
+  authButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    background: "rgba(165, 132, 94, 0.9)",
     border: "none",
     borderRadius: "20px",
-    padding: "0.5rem 1rem",
-    color: "#fff",
-    fontSize: "0.9rem",
+    padding: "8px 16px",
+    color: "white",
     cursor: "pointer",
+    transition: "background 0.3s ease",
+    "&:hover": {
+      background: "rgba(165, 132, 94, 1)",
+    },
+  },
+  authIcon: {
+    width: "24px",
+    height: "24px",
   },
   main: {
-    flex: "1",
-    maxWidth: "800px",
-    margin: "3rem auto",
+    flex: 1,
     display: "flex",
-    flexDirection: "column",
+    padding: "32px",
+    gap: "32px",
+    maxWidth: "1200px",
+    margin: "0 auto",
     alignItems: "center",
   },
-  section: {
-    marginTop: "2rem",
-    textAlign: "left" as const,
+  contentSection: {
+    flex: "1",
+    maxWidth: "600px",
   },
-  heading: {
-    fontSize: "2rem",
+  mainHeading: {
+    fontSize: "2.5rem",
     fontWeight: "bold",
-    marginBottom: "2rem",
-    textAlign: "center" as const,
+    marginBottom: "24px",
+    background: "linear-gradient(90deg, #FFFFFF 0%, #E0E0E0 100%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
   },
-  subheading: {
+  subHeading: {
     fontSize: "1.5rem",
-    marginBottom: "1rem",
+    fontWeight: "600",
+    marginBottom: "16px",
+    color: "#E0E0E0",
   },
-  text: {
-    fontSize: "1rem",
-    lineHeight: "1.5",
+  description: {
+    fontSize: "1.1rem",
+    lineHeight: "1.6",
+    marginBottom: "24px",
+    color: "#CCCCCC",
   },
-  globeContainer: {
+  imageSection: {
+    flex: "1",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: "2rem",
   },
   globeImage: {
-    width: "300px",
-    borderRadius: "50%",
+    maxWidth: "100%",
+    height: "auto",
+    animation: "float 6s ease-in-out infinite",
+  },
+  error: {
+    color: "#ff6b6b",
+    padding: "12px",
+    borderRadius: "4px",
+    background: "rgba(255, 107, 107, 0.1)",
+    marginTop: "16px",
   },
 };
-
