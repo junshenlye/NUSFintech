@@ -38,9 +38,9 @@ async function main() {
         const tradeManager = new hre.ethers.Contract(tradeManagerAddress, TRADE_MANAGER_ABI, countryB);
 
         // Setup trade parameters
-        const agreementId = 1736263379355;
-        const projectIds = [5];
-        const mcuAmounts = [20];
+        const agreementId = 1736300239675;
+        const projectIds = [10];
+        const mcuAmounts = [30];
 
         // Get initial XRP balances
         console.log("\n💰 Initial XRP Balances:");

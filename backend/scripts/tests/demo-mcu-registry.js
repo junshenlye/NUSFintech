@@ -35,8 +35,8 @@ async function main() {
         countryB: hre.ethers.formatEther(await hre.ethers.provider.getBalance(countryB.address))
     };
 
-    console.log("\n💰 Initial ETH Balances:");
-    console.log(`UNFCCC: ${initialBalances.unfccc} ETH`);
+    console.log("\n💰 Initial XRP Balances:");
+    console.log(`UNFCCC: ${initialBalances.unfccc} XRP`);
     console.log(`Country A: ${initialBalances.countryA} ETH`);
     console.log(`Country B: ${initialBalances.countryB} ETH`);
 
@@ -63,8 +63,8 @@ async function main() {
 
         // Register a Project by Country A
         console.log("\n📄 Registering a Project by Country A...");
-        const projectId = "PROJECT002";
-        const projectName = "Solar Pannel Global Project 2";
+        const projectId = "PROJECT15";
+        const projectName = "Solar Pannel Global Project 15";
         const description = "A project to build a solar farm.";
         const projectType = 0; // RenewableEnergy
         const registrySystem = "XRP";
@@ -72,7 +72,7 @@ async function main() {
         const emissionData = {
             totalEmissionReduction: 50,
             baselineEmissions: 500000,
-            verifiedReductions: 2000,
+            verifiedReductions: 50000,
             emissionUnit: "tCO2e",
             isVerified: false,
         };
@@ -112,7 +112,7 @@ async function main() {
 
         // Validate Carbon Reduction and Mint Tokens
         console.log("\n🔄 Validating Carbon Reduction and Minting Tokens...");
-        const carbonReduction = 2000; // equal to the verified reductions
+        const carbonReduction = 50000; // equal to the verified reductions
         const validateTx = await registry.connect(unfccc).validateAndMintTokens(newProjectId, carbonReduction);
         await validateTx.wait();
         console.log(`Carbon reduction of ${carbonReduction} tCO2e validated and tokens minted`);
