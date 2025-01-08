@@ -1,10 +1,10 @@
 [
   {
-    "country": "Singapore",
-    "wallets": ["0xd6e1eD22492EECeb02062742C9bfe3653746D8AC", "0xd6e1eD22492EECeb02062742C9bfe3653746D8AC"]
+    "country": "United States",
+    "wallet": "0x1234567890abcdef1234567890abcdef12345678"
   },
   {
-    "country": "USA",
-    "wallets": ["0xd6e1eD22492EECeb02062742C9bfe3653746D8AC", "0xd6e1eD22492EECeb02062742C9bfe3653746D8AC"]
+    "country": "Singapore",
+    "wallet": "0xd6e1eD22492EECeb02062742C9bfe3653746D8AC"
   }
 ]
