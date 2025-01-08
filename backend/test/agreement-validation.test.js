@@ -16,7 +16,7 @@ async function main() {
 
     try {
         // Get contract instance
-        const itmoRegistryAddress = "0xDc8a5ee9d4B23Edf701581A577668A6cF205a2c7";
+        const itmoRegistryAddress = await question("Enter itmoRegistryAddress: ");//"0xDc8a5ee9d4B23Edf701581A577668A6cF205a2c7";
         const ITMORegistry = await hre.ethers.getContractFactory("ITMORegistry");
         const registry = ITMORegistry.attach(itmoRegistryAddress);
 

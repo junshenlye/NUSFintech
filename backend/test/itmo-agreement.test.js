@@ -16,7 +16,7 @@ async function main() {
 
     try {
         // Get contract instances
-        const itmoRegistryAddress = "0xDc8a5ee9d4B23Edf701581A577668A6cF205a2c7";
+        const itmoRegistryAddress = await question("Enter itmoRegistryAddress: ");// previous address "0xDc8a5ee9d4B23Edf701581A577668A6cF205a2c7";
         const ITMORegistry = await hre.ethers.getContractFactory("ITMORegistry");
         const registry = ITMORegistry.attach(itmoRegistryAddress);
 
@@ -26,6 +26,7 @@ async function main() {
 
         const UNFCCC_ROLE = await registry.UNFCCC_ROLE();
         const hasRole = await registry.hasRole(UNFCCC_ROLE, signer.address);
+        console.log(hasRole)
         if (!hasRole) {
             throw new Error(`Account ${signer.address} does not have UNFCCC_ROLE`);
         }
@@ -49,7 +50,9 @@ async function main() {
         const COUNTRY_ROLE = await registry.COUNTRY_ROLE();
         const sellerHasRole = await registry.hasRole(COUNTRY_ROLE, seller);
         if (!sellerHasRole) {
-            throw new Error(`Seller ${seller} does not have COUNTRY_ROLE`);
+            const grantCountryRole = await registry.registerCountry(seller);
+            await grantCountryRole.wait();
+            console.log("COUNTRY ROLE GRANTED TO SELLER BY UNFCCC")
         }
 
         let buyer;
@@ -63,7 +66,9 @@ async function main() {
         // Verify buyer has COUNTRY_ROLE
         const buyerHasRole = await registry.hasRole(COUNTRY_ROLE, buyer);
         if (!buyerHasRole) {
-            throw new Error(`Buyer ${buyer} does not have COUNTRY_ROLE`);
+            const grantCountryRole = await registry.registerCountry(buyer);
+            await grantCountryRole.wait();
+            console.log("COUNTRY ROLE GRANTED TO BUYER BY UNFCCC")
         }
 
         const mcuAmount = parseInt(await question("MCU Amount to Transfer: "));

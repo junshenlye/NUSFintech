@@ -16,7 +16,7 @@ async function main() {
 
     try {
         // Get MCU Registry contract
-        const registryAddress = "0xdf3117fE0daA4CC09B8181AbB3eDC35cB179c42C";
+        const registryAddress = await question("MCU Registry Address:"); //"0xdf3117fE0daA4CC09B8181AbB3eDC35cB179c42C";
         const MCUProjectRegistry = await hre.ethers.getContractFactory("MCURegistry");
 
         const registry = MCUProjectRegistry.attach(registryAddress);
@@ -28,7 +28,7 @@ async function main() {
     //const signerAddress = await signer.getAddress();
     //   #console.log(signerAddress, signer)
         // Verify the address matches
-        const countryAddress = await question("What is your address: ");
+        const countryAddress = await question("What is your address (Country Address): ");
         const countryPrivateKey = await question("Enter your private key: ");
 
         // Create wallet instance from the provided private key

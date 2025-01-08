@@ -13,8 +13,7 @@ contract TokenManager is ERC1155, ProjectManager { // Inherit from ProjectManage
         address from;
         address to;
         uint256 amount;
-        uint256 timestamp
-        ;
+        uint256 timestamp;
     }
 
 
@@ -53,7 +52,7 @@ contract TokenManager is ERC1155, ProjectManager { // Inherit from ProjectManage
         uint256 timestamp
     );
 
-    event TokenRetired(
+    event TokensRetired(
         address indexed owner,
         uint256 indexed projectId, 
         uint256 amount,
@@ -173,39 +172,37 @@ contract TokenManager is ERC1155, ProjectManager { // Inherit from ProjectManage
         // This function will be implemented in MCURegistry
         return new uint256[](0);
     }
-
-    /** 
-    * @dev Retire tokens
-    * @param projectId ID of project
+    /**
+    * @dev Retire tokens from circulation (mark as used)
+    * @param projectId ID of the project
     * @param amount Amount of tokens to retire
-    * @param reason Reason to retire
-     */
-
+    * @param reason Reason for retirement (e.g., "NDC commitment", "Voluntary cancellation")
+    */
     function retireTokens(
-        uint265 projectId,
+        uint256 projectId,
         uint256 amount,
         string memory reason
-    ) pubic onlyRole(COUNTRY_ROLE) {
-        require(amount > 0, "Amount mst be greater than 0");
+    ) public onlyRole(COUNTRY_ROLE) {
+        require(amount > 0, "Amount must be greater than 0");
         require(balanceOf(msg.sender, projectId) >= amount, "Insufficient balance");
 
-
+        // Create retirement record
         RetirementRecord memory record = RetirementRecord({
-        projectId: projectId,
-        amount: amount,
-        timestamp: block.timestamp,
-        reason: reason,
-        isRetired: true
-    });
+            projectId: projectId,
+            amount: amount,
+            timestamp: block.timestamp,
+            reason: reason,
+            isRetired: true
+        });
 
-    // Store retirement record
-    retirementRecords[msg.sender][projectId].push(record);
+        // Store retirement record
+        retirementRecords[msg.sender][projectId].push(record);
 
-    // Lock tokens (transfer to a designated retirement address)
-    address retirementAddress = address(0x1); // Special address for retired tokens
-    _safeTransferFrom(msg.sender, retirementAddress, projectId, amount, "");
+        // Lock tokens (transfer to a designated retirement address)
+        address retirementAddress = address(0x1); // Special address for retired tokens
+        _safeTransferFrom(msg.sender, retirementAddress, projectId, amount, "");
 
-    emit TokensRetired(msg.sender, projectId, amount, reason, block.timestamp);
+        emit TokensRetired(msg.sender, projectId, amount, reason, block.timestamp);
     }
 
     /**

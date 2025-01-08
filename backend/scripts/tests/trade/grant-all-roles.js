@@ -12,9 +12,9 @@ async function main() {
         );
 
         // Contract addresses
-        const mcuRegistryAddress = "0xdf3117fE0daA4CC09B8181AbB3eDC35cB179c42C";
-        const itmoRegistryAddress = "0xDc8a5ee9d4B23Edf701581A577668A6cF205a2c7";
-        const tradeManagerAddress = "0x26B6ddf80c7aEb4A2F104272F906f45bf02f2428";
+        const mcuRegistryAddress = "0xc071Cb7755Ec95Ed12B512965566dE0c99cBE206";
+        const itmoRegistryAddress = "0xFEAfdb359081F41865123A4B8fD4D4377870c412";
+        const tradeManagerAddress = "0xd826ea1B86Bb1aF5B30c2b66dD7f93ABC404B79E";
 
         console.log("Contracts:");
         console.log(`MCU Registry: ${mcuRegistryAddress}`);

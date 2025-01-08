@@ -2,13 +2,13 @@ const hre = require("hardhat");
 require('dotenv').config();
 const {
     question
-} = require('../../test/utils/test-utils');
+} = require('../../../test/utils/test-utils');
 
 async function main() {
     console.log("\n🌍 Fetching MCU Project Details\n");
 
     // Contract address on XRPL EVM Sidechain
-    const contractAddress = "0xdf3117fE0daA4CC09B8181AbB3eDC35cB179c42C";
+    const contractAddress = await question("Enter MCU Regitstry Address: "); //0xdf3117fE0daA4CC09B8181AbB3eDC35cB179c42C";
 
     // ABI of the MCUProjectRegistry contract
     const abi = [

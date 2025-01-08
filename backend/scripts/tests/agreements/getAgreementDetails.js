@@ -2,7 +2,7 @@ const hre = require("hardhat");
 require('dotenv').config();
 const {
     question
-} = require('../../test/utils/test-utils');
+} = require('../../../test/utils/test-utils');
 
 async function main() {
     console.log("\n🌍 Fetching ITMO Agreement Details\n");

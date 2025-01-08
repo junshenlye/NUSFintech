@@ -15,7 +15,7 @@ async function main() {
 
     try {
         // Connect to MCU Registry contract
-        const registryAddress = "0xdf3117fE0daA4CC09B8181AbB3eDC35cB179c42C";
+        const registryAddress = await question("MCU Registry Address:"); // Previous Address at: "0xdf3117fE0daA4CC09B8181AbB3eDC35cB179c42C";
         const MCUProjectRegistry = await hre.ethers.getContractFactory("MCURegistry");
         const registry = MCUProjectRegistry.attach(registryAddress);
 
