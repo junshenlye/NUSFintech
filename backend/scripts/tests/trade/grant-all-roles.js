@@ -14,7 +14,7 @@ async function main() {
         // Contract addresses
         const mcuRegistryAddress = "0xc071Cb7755Ec95Ed12B512965566dE0c99cBE206";
         const itmoRegistryAddress = "0xFEAfdb359081F41865123A4B8fD4D4377870c412";
-        const tradeManagerAddress = "0xd826ea1B86Bb1aF5B30c2b66dD7f93ABC404B79E";
+        const tradeManagerAddress = "0x5ab08A5AF0193Bc54657CF136b0cfE4783Ea3D09";
 
         console.log("Contracts:");
         console.log(`MCU Registry: ${mcuRegistryAddress}`);

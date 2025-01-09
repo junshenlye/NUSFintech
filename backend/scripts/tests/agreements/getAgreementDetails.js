@@ -8,7 +8,7 @@ async function main() {
     console.log("\n🌍 Fetching ITMO Agreement Details\n");
 
     // Contract address on XRPL EVM Sidechain
-    const contractAddress = "0xcA0FedEC27B23290fFbF926f2585c4d5D5304fc6";
+    const contractAddress = "0xFEAfdb359081F41865123A4B8fD4D4377870c412";
 
     // ABI of the ITMORegistry contract
     const abi = [
