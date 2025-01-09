@@ -79,7 +79,7 @@ contract MCURegistry is ProjectManager, TokenManager, Pausable {
         address to,
         uint256 projectId,
         uint256 amount
-    ) public override onlyRole(COUNTRY_ROLE) whenNotPaused {
+    ) public override onlyRole(UNFCCC_ROLE) whenNotPaused {
         super.transferTokens(from, to, projectId, amount);
     }
 

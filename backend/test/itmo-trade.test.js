@@ -61,6 +61,9 @@ async function main() {
         console.log("\n🔐 Validating Roles...");
         const UNFCCC_ROLE = await tradeManager.UNFCCC_ROLE();
         const COUNTRY_ROLE = await tradeManager.COUNTRY_ROLE();
+        console.log(tradeManager.address);
+        console.log(UNFCCC_ROLE);
+        console.log(COUNTRY_ROLE);
 
         const hasUnfcccRole = await tradeManager.hasRole(UNFCCC_ROLE, unfccc.address);
         const sellerHasCountryRole = await tradeManager.hasRole(COUNTRY_ROLE, seller.address);
@@ -69,6 +72,10 @@ async function main() {
         console.log(`UNFCCC Role Check: ${hasUnfcccRole}`);
         console.log(`Seller Country Role Check: ${sellerHasCountryRole}`);
         console.log(`Buyer Country Role Check: ${buyerHasCountryRole}`);
+        const tx = await itmoRegistry.grantRole(UNFCCC_ROLE, process.env.TRADE_MANAGER_ADDRESS);
+        await tx.wait();
+        const hasRole = await itmoRegistry.hasRole(UNFCCC_ROLE, process.env.TRADE_MANAGER_ADDRESS);
+        console.log(hasRole)
 
         if (!hasUnfcccRole) throw new Error("UNFCCC role validation failed");
         //if (!sellerHasCountryRole) throw new Error("Seller role validation failed");
@@ -123,7 +130,7 @@ async function main() {
 
         // 7. Execute Trade
         console.log("\n🔄 Executing Trade...");
-        const tradeTx = await tradeManager.connect(unfccc).executeTrade(
+        const tradeTx = await tradeManager.executeTrade(
             agreementId,
             [projectId],
             [agreement[3]],
