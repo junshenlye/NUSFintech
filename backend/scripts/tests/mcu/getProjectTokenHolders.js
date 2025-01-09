@@ -5,7 +5,7 @@ async function main() {
     console.log("\n🌍 Fetching MCU Project Token Holders\n");
 
     // Contract address on XRPL EVM Sidechain
-    const contractAddress = "0xdf3117fE0daA4CC09B8181AbB3eDC35cB179c42C";
+    const contractAddress = "0x89746554a65D439d3657C6Ee27c76D28992e0dc7";
 
     // ABI of the MCUProjectRegistry contract
     const abi = [
@@ -200,7 +200,7 @@ async function main() {
     const contract = new hre.ethers.Contract(contractAddress, abi, provider);
 
     // Specify the project ID you want to query
-    const projectId = 5; // Replace with the actual project ID (e.g., 5 for the project registered in demo-mcu-registry.js)
+    const projectId = 0; // Replace with the actual project ID (e.g., 5 for the project registered in demo-mcu-registry.js)
 
     // Fetch project details
     console.log(`Fetching details for Project ID: ${projectId}...`);
@@ -224,27 +224,39 @@ async function main() {
     console.log(`\nToken Holder: ${projectDetails.countryOwner}`);
     console.log(`Tokens Owned: ${countryOwnerBalance.toString()}`);
 
-    // Fetch all TransferSingle events
+    // Fetch all TransferSingle events in chunks of 10,000 blocks
     console.log("\n🔍 Fetching Transfer Events...");
-    const filter = contract.filters.TransferSingle();
-    const events = await contract.queryFilter(filter);
 
     const tokenHolders = new Set();
-
-    // Add the country owner to the token holders set
     tokenHolders.add(projectDetails.countryOwner);
 
-    // Parse TransferSingle events to find other token holders for the specific project ID
-    for (const event of events) {
-        const { id, from, to } = event.args;
+    // Get the latest block number
+    const latestBlock = await provider.getBlockNumber();
 
-        // Check if the event is for the specified project ID
-        if (id.toString() === projectId.toString()) {
-            if (from !== hre.ethers.ZeroAddress) {
-                tokenHolders.add(from);
-            }
-            if (to !== hre.ethers.ZeroAddress) {
-                tokenHolders.add(to);
+    // Define the chunk size (10,000 blocks)
+    const chunkSize = 10000;
+
+    // Loop through blocks in chunks
+    for (let fromBlock = 0; fromBlock <= latestBlock; fromBlock += chunkSize) {
+        const toBlock = Math.min(fromBlock + chunkSize - 1, latestBlock);
+
+        console.log(`Fetching events from block ${fromBlock} to ${toBlock}...`);
+
+        const filter = contract.filters.TransferSingle();
+        const events = await contract.queryFilter(filter, fromBlock, toBlock);
+
+        // Parse TransferSingle events to find other token holders for the specific project ID
+        for (const event of events) {
+            const { id, from, to } = event.args;
+
+            // Check if the event is for the specified project ID
+            if (id.toString() === projectId.toString()) {
+                if (from !== hre.ethers.ZeroAddress) {
+                    tokenHolders.add(from);
+                }
+                if (to !== hre.ethers.ZeroAddress) {
+                    tokenHolders.add(to);
+                }
             }
         }
     }

@@ -31,6 +31,8 @@ async function main() {
         console.log(`Buyer: ${initialDetails[2]}`);
         console.log(`MCU Amount: ${initialDetails[3].toString()}`);
         console.log(`Price per MCU: ${hre.ethers.formatEther(initialDetails[4])} ${initialDetails[5]}`);
+        console.log(`Metadata url: ${initialDetails[12]}`);
+
 
         // Check if agreement exists and is in correct state
         if (getAgreementStatus(initialDetails[7]) === "NonExistent") {

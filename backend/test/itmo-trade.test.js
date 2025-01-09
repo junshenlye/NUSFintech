@@ -20,11 +20,11 @@ async function main() {
             process.env.PRIVATE_KEY,
             hre.ethers.provider
         );
-        const buyer = new hre.ethers.Wallet(
+        const seller = new hre.ethers.Wallet(
             process.env.COUNTRY_A_PRIVATE_KEY,
             hre.ethers.provider
         );
-        const seller = new hre.ethers.Wallet(
+        const buyer = new hre.ethers.Wallet(
             process.env.COUNTRY_B_PRIVATE_KEY,
             hre.ethers.provider
         );
@@ -70,12 +70,8 @@ async function main() {
         console.log(COUNTRY_ROLE);
 
         const hasUnfcccRole = await tradeManager.hasRole(UNFCCC_ROLE, unfccc.address);
-        const sellerHasCountryRole = await tradeManager.hasRole(COUNTRY_ROLE, seller.address);
-        const buyerHasCountryRole = await tradeManager.hasRole(COUNTRY_ROLE, buyer.address);
 
         console.log(`UNFCCC Role Check: ${hasUnfcccRole}`);
-        console.log(`Seller Country Role Check: ${sellerHasCountryRole}`);
-        console.log(`Buyer Country Role Check: ${buyerHasCountryRole}`);
 
 
         const hasRole = await itmoRegistry.hasRole(UNFCCC_ROLE, process.env.TRADE_MANAGER_ADDRESS);
@@ -108,6 +104,7 @@ async function main() {
         console.log(`Buyer: ${agreement[2]}`);
         console.log(`MCU Amount: ${agreement[3]}`);
         console.log(`Price per MCU: ${hre.ethers.formatEther(agreement[4])} XRP`);
+        console.log(`MetaURL_link ${agreement[12]} XRP`);
 
 
 

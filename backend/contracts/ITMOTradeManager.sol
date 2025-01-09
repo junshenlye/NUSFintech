@@ -25,6 +25,7 @@ contract ITMOTradeManager is AccessControlBase, ReentrancyGuard {  // Change thi
         uint256 mcuAmount,
         uint256 paymentAmount,
         uint256[] projectIds
+
     );
 
     event PaymentReceived(
@@ -73,7 +74,8 @@ contract ITMOTradeManager is AccessControlBase, ReentrancyGuard {  // Change thi
             ,  // createdAt
             ,  // validUntil
             ,  // transferDeadline
-            // correspondingAdjustmentRef
+            , // correspondingAdjustmentRef
+            //metadataurl
         ) = itmoRegistry.getAgreementDetails(agreementId);
 
         // Validate agreement state

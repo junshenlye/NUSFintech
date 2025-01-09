@@ -53,6 +53,9 @@ contract ITMORegistry is AccessControlBase, Pausable, ReentrancyGuard {
         // Agreement Type and References
         bool isBilateral;                  
         string correspondingAdjustmentRef; 
+
+        // Metadata URL
+        string metadataUrl;  // New field for IPFS URL
     }
 
     // Storage
@@ -65,7 +68,8 @@ contract ITMORegistry is AccessControlBase, Pausable, ReentrancyGuard {
         address indexed buyer,
         uint256 mcuAmount,
         uint256 pricePerMCU,
-        string paymentCurrency
+        string paymentCurrency,
+        string metadataUrl  // Added metadataUrl
     );
     event AgreementSigned(uint256 indexed agreementId, address indexed signer);
     event AllSignaturesCollected(uint256 indexed agreementId);
@@ -90,6 +94,7 @@ contract ITMORegistry is AccessControlBase, Pausable, ReentrancyGuard {
      * @param validityPeriod Duration of agreement validity in seconds
      * @param transferDeadline Deadline for MCU transfer in seconds from now
      * @param correspondingAdjustmentRef Reference to corresponding adjustment
+     * @param metadataUrl IPFS URL for agreement metadata
      */
     function initializeAgreement(
         uint256 agreementId,
@@ -101,7 +106,8 @@ contract ITMORegistry is AccessControlBase, Pausable, ReentrancyGuard {
         PaymentMethod paymentMethod,
         uint256 validityPeriod,
         uint256 transferDeadline,
-        string calldata correspondingAdjustmentRef
+        string calldata correspondingAdjustmentRef,
+        string calldata metadataUrl  // New parameter for IPFS URL
     ) 
         external 
         onlyRole(UNFCCC_ROLE)
@@ -130,6 +136,7 @@ contract ITMORegistry is AccessControlBase, Pausable, ReentrancyGuard {
         agreement.transferDeadline = block.timestamp + transferDeadline;
         agreement.isBilateral = true;
         agreement.correspondingAdjustmentRef = correspondingAdjustmentRef;
+        agreement.metadataUrl = metadataUrl;  // Set the metadata URL
 
         emit AgreementInitialized(
             agreementId,
@@ -137,7 +144,8 @@ contract ITMORegistry is AccessControlBase, Pausable, ReentrancyGuard {
             buyer,
             mcuAmount,
             pricePerMCU,
-            paymentCurrency
+            paymentCurrency,
+            metadataUrl  // Include metadataUrl in the event
         );
     }
 
@@ -227,7 +235,8 @@ contract ITMORegistry is AccessControlBase, Pausable, ReentrancyGuard {
             uint256 createdAt,
             uint256 validUntil,
             uint256 transferDeadline,
-            string memory correspondingAdjustmentRef
+            string memory correspondingAdjustmentRef,
+            string memory metadataUrl
         )
     {
         ITMOAgreement storage agreement = agreements[agreementId];
@@ -243,7 +252,8 @@ contract ITMORegistry is AccessControlBase, Pausable, ReentrancyGuard {
             agreement.createdAt,
             agreement.validUntil,
             agreement.transferDeadline,
-            agreement.correspondingAdjustmentRef
+            agreement.correspondingAdjustmentRef,
+            agreement.metadataUrl  // Ensure this is included
         );
     }
 

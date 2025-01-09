@@ -88,6 +88,7 @@ async function main() {
         const transferDeadline = Math.floor(Date.now() / 1000) + (transferDeadlineDays* 24 * 60 * 60); // Convert to seconds
 
         const correspondingAdjustmentRef = await question("Corresponding Adjustment Reference: ");
+        const metadata_url = await question("Corresponding Adjustment Reference: ");
 
         // Display summary before creation
         console.log("\n📋 Agreement Summary:");
@@ -99,7 +100,7 @@ async function main() {
         console.log(`Payment Method: ${getPaymentMethod(paymentMethod)}`);
         console.log(`Validity Period: ${validityDays} days`);
         console.log(`Transfer Deadline: ${transferDeadlineDays} days`);
-
+        console.log(`Meta Data link: ${metadata_url}`);
         const confirm = await question("\nConfirm agreement creation? (yes/no): ");
         if (confirm.toLowerCase() !== 'yes') {
             console.log("Agreement creation cancelled.");
@@ -119,7 +120,8 @@ async function main() {
             paymentMethod,
             validityPeriod,
             transferDeadline,
-            correspondingAdjustmentRef
+            correspondingAdjustmentRef,
+            metadata_url
         );
 
         console.log("Waiting for transaction confirmation...");
@@ -137,6 +139,7 @@ async function main() {
         console.log(`Status: ${getAgreementStatus(agreement[7])}`);
         console.log(`Created: ${formatDate(agreement[8])}`);
         console.log(`Valid Until: ${formatDate(agreement[9])}`);
+        console.log(`Meta Data link: ${agreement[10]}`);
 
     } catch (error) {
         console.error("\n❌ Error:", error);
