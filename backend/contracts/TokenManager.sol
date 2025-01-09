@@ -101,7 +101,7 @@ contract TokenManager is ERC1155, ProjectManager { // Inherit from ProjectManage
         address to,
         uint256 projectId,
         uint256 amount
-    ) public virtual onlyRole(COUNTRY_ROLE) {
+    ) public virtual onlyRole(UNFCCC_ROLE) {
         require(from != address(0), "Invalid sender address");
         require(to != address(0), "Invalid recipient address");
         require(amount > 0, "Amount must be greater than 0");
