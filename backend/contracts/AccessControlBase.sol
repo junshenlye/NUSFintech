@@ -13,4 +13,9 @@ contract AccessControlBase is AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(UNFCCC_ROLE, msg.sender);
     }
+    function registerCountry(address country) external onlyRole(UNFCCC_ROLE) {
+        require(country != address(0), "Invalid address");
+        require(!hasRole(COUNTRY_ROLE, country), "Country already registered");
+        _grantRole(COUNTRY_ROLE, country);
+    }
 }

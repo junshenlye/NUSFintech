@@ -1,6 +1,10 @@
 // test/validate-trade-execution.test.js
 const hre = require("hardhat");
 require('dotenv').config();
+const {
+    getAgreementStatus,
+} = require('./utils/test-utils');
+const { Agent } = require("http");
 
 async function main() {
     console.log("\n🔍 ITMO Trade Validation and Execution Test\n");
@@ -16,11 +20,11 @@ async function main() {
             process.env.PRIVATE_KEY,
             hre.ethers.provider
         );
-        const seller = new hre.ethers.Wallet(
+        const buyer = new hre.ethers.Wallet(
             process.env.COUNTRY_A_PRIVATE_KEY,
             hre.ethers.provider
         );
-        const buyer = new hre.ethers.Wallet(
+        const seller = new hre.ethers.Wallet(
             process.env.COUNTRY_B_PRIVATE_KEY,
             hre.ethers.provider
         );
@@ -72,10 +76,15 @@ async function main() {
         console.log(`UNFCCC Role Check: ${hasUnfcccRole}`);
         console.log(`Seller Country Role Check: ${sellerHasCountryRole}`);
         console.log(`Buyer Country Role Check: ${buyerHasCountryRole}`);
-        const tx = await itmoRegistry.grantRole(UNFCCC_ROLE, process.env.TRADE_MANAGER_ADDRESS);
-        await tx.wait();
+
+
         const hasRole = await itmoRegistry.hasRole(UNFCCC_ROLE, process.env.TRADE_MANAGER_ADDRESS);
-        console.log(hasRole)
+        if (!hasRole) {
+            const tx = await itmoRegistry.grantRole(UNFCCC_ROLE, process.env.TRADE_MANAGER_ADDRESS);
+            await tx.wait();
+        }
+        const tx = await mcuRegistry.grantRole(UNFCCC_ROLE, process.env.TRADE_MANAGER_ADDRESS);
+        await tx.wait();
 
         if (!hasUnfcccRole) throw new Error("UNFCCC role validation failed");
         //if (!sellerHasCountryRole) throw new Error("Seller role validation failed");
@@ -129,8 +138,8 @@ async function main() {
         }
 
         // 7. Execute Trade
-        console.log("\n🔄 Executing Trade...");
-        const tradeTx = await tradeManager.executeTrade(
+        console.log(agreementId)
+        const tradeTx = await tradeManager.connect(unfccc).executeTrade(
             agreementId,
             [projectId],
             [agreement[3]],
@@ -153,7 +162,7 @@ async function main() {
 
         // Verify agreement status
         const finalAgreement = await itmoRegistry.getAgreementDetails(agreementId);
-        console.log(`Final Agreement Status: ${finalAgreement[7]}`);
+        console.log(`Final Agreement Status: ${finalAgreement[8]}`);
 
         console.log("\n✅ Trade Test Completed Successfully!");
         console.log(`Transaction Hash: ${receipt.hash}`);

@@ -1,20 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "./AccessControlBase.sol";
 
 /**
  * @title ITMORegistry
  * @dev Manages ITMO agreements between countries under UNFCCC supervision
  * @notice This contract handles agreement creation, signing, and supervision for ITMO trades
  */
-contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
-    // Roles
-    bytes32 public constant UNFCCC_ROLE = keccak256("UNFCCC_ROLE");
-    bytes32 public constant COUNTRY_ROLE = keccak256("COUNTRY_ROLE");
-
+contract ITMORegistry is AccessControlBase, Pausable, ReentrancyGuard {
     // Agreement Status
     enum AgreementStatus {
         NonExistent,
@@ -36,7 +32,7 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
     // ITMO Agreement Structure
     struct ITMOAgreement {
         // Basic Information
-        uint256 agreementId;                // Change from string to uint256
+        uint256 agreementId;               
         address sellerCountry;             
         address buyerCountry;              
         uint256 mcuAmount;                 
@@ -61,7 +57,6 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
 
     // Storage
     mapping(uint256 => ITMOAgreement) public agreements;
-    uint256 public nextAgreementId;
 
     // Events
     event AgreementInitialized(
@@ -79,12 +74,9 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
     event AgreementTerminated(uint256 indexed agreementId);
 
     /**
-     * @dev Constructor that gives msg.sender all the default admin role
+     * @dev Constructor initializes the contract with AccessControlBase
      */
-    constructor() {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(UNFCCC_ROLE, msg.sender);
-    }
+    constructor() AccessControlBase() {}
 
     /**
      * @dev Initialize a new ITMO agreement
@@ -100,7 +92,7 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
      * @param correspondingAdjustmentRef Reference to corresponding adjustment
      */
     function initializeAgreement(
-        uint256 agreementId,  // Change from string to uint256
+        uint256 agreementId,
         address seller,
         address buyer,
         uint256 mcuAmount,
@@ -114,9 +106,8 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
         external 
         onlyRole(UNFCCC_ROLE)
         whenNotPaused 
-        returns (uint256)
     {
-        require(agreementId > 0, "Invalid agreement ID");  // Ensure agreementId is valid
+        require(agreementId > 0, "Invalid agreement ID");
         require(seller != address(0) && buyer != address(0), "Invalid addresses");
         require(mcuAmount > 0, "Invalid MCU amount");
         require(pricePerMCU > 0, "Invalid price");
@@ -126,7 +117,7 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
         ITMOAgreement storage agreement = agreements[agreementId];
 
         // Initialize agreement
-        agreement.agreementId = agreementId;  // Now both are uint256
+        agreement.agreementId = agreementId;
         agreement.sellerCountry = seller;
         agreement.buyerCountry = buyer;
         agreement.mcuAmount = mcuAmount;
@@ -148,7 +139,6 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
             pricePerMCU,
             paymentCurrency
         );
-        return agreementId;
     }
 
     /**
@@ -223,38 +213,38 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
      * @param agreementId ID of the agreement
      */
     function getAgreementDetails(uint256 agreementId)
-    external
-    view
-    returns (
-        uint256 agreementRef,  // Change from string to uint256
-        address seller,
-        address buyer,
-        uint256 mcuAmount,
-        uint256 pricePerMCU,
-        string memory paymentCurrency,
-        PaymentMethod paymentMethod,
-        AgreementStatus status,
-        uint256 createdAt,
-        uint256 validUntil,
-        uint256 transferDeadline,
-        string memory correspondingAdjustmentRef
-    )
-{
-    ITMOAgreement storage agreement = agreements[agreementId];
-    return (
-        agreement.agreementId,  // Now returns uint256
-        agreement.sellerCountry,
-        agreement.buyerCountry,
-        agreement.mcuAmount,
-        agreement.pricePerMCU,
-        agreement.paymentCurrency,
-        agreement.paymentMethod,
-        agreement.status,
-        agreement.createdAt,
-        agreement.validUntil,
-        agreement.transferDeadline,
-        agreement.correspondingAdjustmentRef
-    )  ;
+        external
+        view
+        returns (
+            uint256 agreementRef,
+            address seller,
+            address buyer,
+            uint256 mcuAmount,
+            uint256 pricePerMCU,
+            string memory paymentCurrency,
+            PaymentMethod paymentMethod,
+            AgreementStatus status,
+            uint256 createdAt,
+            uint256 validUntil,
+            uint256 transferDeadline,
+            string memory correspondingAdjustmentRef
+        )
+    {
+        ITMOAgreement storage agreement = agreements[agreementId];
+        return (
+            agreement.agreementId,
+            agreement.sellerCountry,
+            agreement.buyerCountry,
+            agreement.mcuAmount,
+            agreement.pricePerMCU,
+            agreement.paymentCurrency,
+            agreement.paymentMethod,
+            agreement.status,
+            agreement.createdAt,
+            agreement.validUntil,
+            agreement.transferDeadline,
+            agreement.correspondingAdjustmentRef
+        );
     }
 
     /**
@@ -280,11 +270,5 @@ contract ITMORegistry is AccessControl, Pausable, ReentrancyGuard {
      */
     function unpause() external onlyRole(UNFCCC_ROLE) {
         _unpause();
-    }
-    // Add this function to the ITMORegistry contract
-    function registerCountry(address country) external onlyRole(UNFCCC_ROLE) {
-        require(country != address(0), "Invalid address");
-        require(!hasRole(COUNTRY_ROLE, country), "Country already registered");
-        _grantRole(COUNTRY_ROLE, country);
     }
 }

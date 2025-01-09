@@ -91,7 +91,9 @@ async function main() {
                 }
 
                 // No need to grant additional roles since TradeManager inherits from AccessControlBase
-                console.log("TradeManager permissions setup complete (using inherited AccessControl)");
+                const UNFCCC_ROLE = await itmoRegistry.UNFCCC_ROLE();
+                console.log("Setting up ITMORegistry roles...");
+                await (await itmoRegistry.grantRole(UNFCCC_ROLE, deployer.address)).wait();
             }
         }
 
