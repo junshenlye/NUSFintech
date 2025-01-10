@@ -9,6 +9,7 @@ async function main() {
     try {
         // Get deployer and other accounts
         const [deployer] = await hre.ethers.getSigners();
+        console.log(deployer)
         console.log("Deploying contracts with account:", deployer.address);
         console.log("Account balance:", hre.ethers.formatEther(await deployer.provider.getBalance(deployer.address)), "ETH");
 

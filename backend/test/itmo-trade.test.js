@@ -115,7 +115,7 @@ async function main() {
             throw new Error("Missing PROJECT_ID in environment variables");
         }
 
-        const sellerBalance = await mcuRegistry.balanceOf(seller.address, projectId);
+        const sellerBalance = await mcuRegistry.balanceOf(agreement[1], projectId);
         console.log(`Seller's MCU Balance for Project ${projectId}: ${sellerBalance}`);
 
         if (sellerBalance < agreement[3]) {
@@ -124,7 +124,7 @@ async function main() {
 
         // 6. Payment Amount Validation
         const totalPayment = agreement[3] * agreement[4];
-        const buyerBalance = await hre.ethers.provider.getBalance(buyer.address);
+        const buyerBalance = await hre.ethers.provider.getBalance(agreement[2]);
 
         console.log("\n💰 Payment Details:");
         console.log(`Required Payment: ${hre.ethers.formatEther(totalPayment)} XRP`);
@@ -150,8 +150,8 @@ async function main() {
         console.log("\n✨ Verifying Results...");
         
         // Check new balances
-        const newSellerBalance = await mcuRegistry.balanceOf(seller.address, projectId);
-        const newBuyerBalance = await mcuRegistry.balanceOf(buyer.address, projectId);
+        const newSellerBalance = await mcuRegistry.balanceOf(agreement[1], projectId);
+        const newBuyerBalance = await mcuRegistry.balanceOf(agreement[2], projectId);
 
         console.log("\nFinal MCU Balances:");
         console.log(`Seller: ${newSellerBalance}`);
