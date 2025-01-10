@@ -6,7 +6,7 @@ const {
     AgreementStatus,
     deployContractWithSetup,
     initializeSampleAgreement
-} = require("./helpers/test-helpers");
+} = require("../helpers/test-helpers");
 
 describe("ITMORegistry - Integration Tests", function () {
     async function deployWithFullSetupFixture() {

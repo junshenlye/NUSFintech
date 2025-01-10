@@ -88,7 +88,7 @@ async function main() {
         const transferDeadline = Math.floor(Date.now() / 1000) + (transferDeadlineDays* 24 * 60 * 60); // Convert to seconds
 
         const correspondingAdjustmentRef = await question("Corresponding Adjustment Reference: ");
-        const metadata_url = await question("Corresponding Adjustment Reference: ");
+        const metadata_url = await question("Metaurl: ");
 
         // Display summary before creation
         console.log("\n📋 Agreement Summary:");
