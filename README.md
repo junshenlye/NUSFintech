@@ -143,3 +143,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 We welcome contributions! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines.
 
 ---
+
+### Full Documentation
+
+The full documentation of our code can be seen here: https://tinyurl.com/nus-fintech-CarbonCredit
