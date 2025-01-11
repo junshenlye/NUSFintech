@@ -108,12 +108,12 @@ npx hardhat test/script-name.test.js
 ```
 
 Available scripts:
-- [`test/project-registration.test.js`](backend\test\project-registration.test.js) - Create Project
-- [`test/project-validation.test.js`](backend\test\project-validation.test.js) - Validate Project
-- [`test/itmo-agreement.test.js`](backend\test\itmo-agreement.test.js) Create Agreement
-- [`test/agreement-validation.test.js`](backend\test\agreement-validation.test.js) - Validate Agreement
-- [`test/itmo-trade.test.js`](backend\test\itmo-trade.test.js) - Execute Trade
-- [`test/retire-tokens.test.js`](backend\test\retire-tokens.test.js) - Retire Tokens
+- [`test/project-registration.test.js`](backend/test/project-registration.test.js) - Create Project
+- [`test/project-validation.test.js`](backend/test/project-validation.test.js) - Validate Project
+- [`test/itmo-agreement.test.js`](backend/test/itmo-agreement.test.js) - Create Agreement
+- [`test/agreement-validation.test.js`](backend/test/agreement-validation.test.js) - Validate Agreement
+- [`test/itmo-trade.test.js`](backend/test/itmo-trade.test.js) - Execute Trade
+- [`test/retire-tokens.test.js`](backend/test/retire-tokens.test.js) - Retire Tokens
 
 ---
 
