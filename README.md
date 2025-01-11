@@ -29,7 +29,7 @@ The solution leverages role-based access control, multi-token standards (ERC-115
 ### Key Contracts
 
 1. [**AccessControlBase**](backend/contracts/AccessControlBase.sol): Implements role-based access control using OpenZeppelin's `AccessControl`.
-2. [**ProjectManager**](backendc/ontracts/ProjectManager.sol): Manages carbon credit projects, including registration, emissions tracking, and status updates.
+2. [**ProjectManager**](backend/contracts/ProjectManager.sol): Manages carbon credit projects, including registration, emissions tracking, and status updates.
 3. [**TokenManager**](backend/contracts/TokenManager.sol): Handles carbon credit tokens (ERC-1155), including minting, transfers, and retirement.
 4. [**MCURegistry**](backend/contracts/MCURegistry.sol): Integrates project and token management while adding pausable functionality.
 5. [**ITMORegistry**](backend/contracts/ITMORegistry.sol): Manages ITMO agreements between countries.
@@ -108,11 +108,12 @@ npx hardhat test/script-name.test.js
 ```
 
 Available scripts:
-- `test/project-registration.test.js`
-- `test/project-validation.test.js`
-- `test/agreement-validation.test.js`
-- `test/validate-trade-execution.test.js`
-- `test/retire-tokens.test.js`
+- [`test/project-registration.test.js`](backend\test\project-registration.test.js) - Create Project
+- [`test/project-validation.test.js`](backend\test\project-validation.test.js) - Validate Project
+- [`test/itmo-agreement.test.js`](backend\test\itmo-agreement.test.js) Create Agreement
+- [`test/agreement-validation.test.js`](backend\test\agreement-validation.test.js) - Validate Agreement
+- [`test/itmo-trade.test.js`](backend\test\itmo-trade.test.js) - Execute Trade
+- [`test/retire-tokens.test.js`](backend\test\retire-tokens.test.js) - Retire Tokens
 
 ---
 
