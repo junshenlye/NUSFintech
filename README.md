@@ -28,12 +28,12 @@ The solution leverages role-based access control, multi-token standards (ERC-115
 
 ### Key Contracts
 
-1. **AccessControlBase**: Implements role-based access control using OpenZeppelin's `AccessControl`.
-2. **ProjectManager**: Manages carbon credit projects, including registration, emissions tracking, and status updates.
-3. **TokenManager**: Handles carbon credit tokens (ERC-1155), including minting, transfers, and retirement.
-4. **MCURegistry**: Integrates project and token management while adding pausable functionality.
-5. **ITMORegistry**: Manages ITMO agreements between countries.
-6. **ITMOTradeManager**: Facilitates trades under ITMO agreements, ensuring secure MCU transfers.
+1. [**AccessControlBase**](backend\contracts\AccessControlBase.sol): Implements role-based access control using OpenZeppelin's `AccessControl`.
+2. [**ProjectManager**](backend\contracts\ProjectManager.sol): Manages carbon credit projects, including registration, emissions tracking, and status updates.
+3. [**TokenManager**](backend\contracts\TokenManager.sol): Handles carbon credit tokens (ERC-1155), including minting, transfers, and retirement.
+4. [**MCURegistry**](backend\contracts\MCURegistry.sol): Integrates project and token management while adding pausable functionality.
+5. [**ITMORegistry**](backend\contracts\ITMORegistry.sol): Manages ITMO agreements between countries.
+6. [**ITMOTradeManager**](backend\contracts\ITMOTradeManager.sol): Facilitates trades under ITMO agreements, ensuring secure MCU transfers.
 
 ---
 
@@ -63,7 +63,7 @@ The solution leverages role-based access control, multi-token standards (ERC-115
 - Tracks ownership history and retired tokens.
 
 ### MCURegistry
-- Combines project and token management.
+- Inherit from project and token management.
 - Adds pausable functionality for critical operations.
 
 ### ITMORegistry
@@ -144,6 +144,6 @@ We welcome contributions! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file
 
 ---
 
-### Full Documentation
+# Full Documentation
 
 The full documentation of our code can be seen here: https://tinyurl.com/nus-fintech-CarbonCredit
