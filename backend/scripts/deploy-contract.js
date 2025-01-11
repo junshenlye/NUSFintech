@@ -1,6 +1,6 @@
 // deploy.js
 const hre = require("hardhat");
-const { question } = require('../../test/utils/test-utils');
+const { question } = require('../test/utils/test-utils');
 require('dotenv').config();
 
 async function main() {
