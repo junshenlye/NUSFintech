@@ -100,6 +100,18 @@ The solution leverages role-based access control, multi-token standards (ERC-115
 
 ---
 
+### Dependencies
+
+### Development Dependencies
+- **@nomicfoundation/hardhat-toolbox**: ^4.0.0
+- **ethers**: ^6.13.5
+- **hardhat**: ^2.22.17
+
+### Production Dependencies
+- **@openzeppelin/contracts**: ^4.9.3
+- **dotenv**: ^16.4.7
+- **xrpl**: ^4.1.0
+
 ## Testing
 
 Run test scripts to validate individual components:
